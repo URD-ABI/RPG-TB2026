@@ -9,7 +9,7 @@ import { portraitIdFromUrl, portraitPoseStyle } from './portrait-poses.js';
 import { SKIN_TONES, DEFAULT_SKIN_TONE } from './skin-tones.js';
 import { applyOutfitSkin } from './outfit-skin.js';
 import { browserSupabaseApi } from './supabase-api.js';
-import { turnFeedback } from './combat-feedback.js';
+import { turnFeedback } from './combat-feedback.js?v=2';
 
 const app = document.querySelector('#app');
 const remoteApi = browserSupabaseApi();
