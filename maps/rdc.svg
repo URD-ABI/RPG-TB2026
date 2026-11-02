@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" role="img" aria-labelledby="title desc">
+  <title id="title">Plan illustré du rez-de-chaussée</title>
+  <desc id="desc">Relevé simplifié du plan du bâtiment : Local Poubelles et Halle à gauche, salles et laboratoires en deux rangées au nord, FMS et Polymères au centre, cour intérieure, Chimie dans l'aile droite. Les pièces sans nom et leurs cloisons sont conservées.</desc>
+  <defs>
+    <pattern id="paper" width="26" height="26" patternUnits="userSpaceOnUse"><path d="M0 25h26M25 0v26" stroke="#d4c39f" stroke-width=".7" opacity=".46"/></pattern>
+    <pattern id="yard" width="13" height="13" patternUnits="userSpaceOnUse"><path d="M0 13L13 0" stroke="#a9c8b7" stroke-width="1.5" opacity=".7"/></pattern>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="6" dy="8" stdDeviation="0" flood-color="#b7a584" flood-opacity=".6"/></filter>
+    <style>
+      .wall{stroke:#263943;stroke-width:5;stroke-linejoin:round;fill:none}.partition{stroke:#263943;stroke-width:3.5;fill:none}.door{stroke:#f8efd8;stroke-width:7}.room{stroke:#263943;stroke-width:4;fill:#e9dfc9}.unnamed{fill:#eae0cf}.hall{fill:#f5d996}.lab{fill:#d5e3d7}.blue{fill:#d4e2e8}.purple{fill:#dfd6e8}.warm{fill:#ead6c8}.note{fill:#68736e;font:800 11px Trebuchet MS,Arial,sans-serif;letter-spacing:2px}.floor{fill:#9f5b45;font:900 18px Trebuchet MS,Arial,sans-serif;letter-spacing:4px}
+    </style>
+  </defs>
+  <rect x="7" y="7" width="986" height="746" rx="24" fill="#f8efd8" stroke="#263943" stroke-width="8"/>
+  <rect x="18" y="18" width="964" height="724" rx="14" fill="url(#paper)"/>
+
+  <!-- Roof and courtyard visible above the northern facade. -->
+  <path d="M181 23H969V149H181Z" fill="#e9e3ce" stroke="#a7a48c" stroke-width="2"/>
+  <circle cx="557" cy="80" r="36" fill="#e2e8d8" stroke="#91a69b" stroke-width="3"/>
+  <circle cx="801" cy="76" r="36" fill="#e2e8d8" stroke="#91a69b" stroke-width="3"/>
+  <path d="M181 137H969" stroke="#263943" stroke-width="4"/>
+
+  <!-- Local Poubelles occupies the separate upper-left block marked GYM on the source plan. -->
+  <path d="M108 22H181V151H108Z" class="room blue"/>
+  <path d="M108 99H180M128 100V150" class="partition"/>
+  <path d="M141 151h19" class="door"/>
+
+  <!-- Halle: long open bay with the north service rooms and west-side alcoves retained. -->
+  <path d="M108 151H402V631H108Z" class="room hall" filter="url(#shadow)"/>
+  <path d="M178 152V248H402M178 195H252V248M252 152V248M323 152V248M108 247H402" class="partition"/>
+  <path d="M108 278H178V334H108M108 334H178V389H108M108 389H178V447H108M108 447H178V505H108M108 505H178V562H108M178 248V631" class="partition"/>
+  <path d="M178 290v17M178 349v17M178 405v17M178 463v17M178 520v17M252 248h16M332 248h17" class="door"/>
+  <path d="M401 295v17M401 574v17" class="door"/>
+
+  <!-- Northern rooms: every unlabelled bay of the original row has its own partition. -->
+  <path d="M425 152H827V236H425Z" class="room unnamed"/>
+  <path d="M471 152V236M504 152V236M561 152V236M613 152V236M661 152V236M720 152V236" class="partition"/>
+  <path d="M505 183H561" class="partition"/>
+  <path d="M483 236h13M523 236h15M581 236h15M632 236h15M681 236h15M747 236h17" class="door"/>
+  <path d="M505 154H561V236H505Z" class="room lab"/>
+  <path d="M720 154H827V236H720Z" class="room purple"/>
+  <path d="M772 236h17" class="door"/>
+
+  <!-- The corridor and its opposite line of small rooms lead to RMN. -->
+  <path d="M402 237H827V263H402Z" fill="#f8efd8"/>
+  <path d="M402 237H827V263H438" fill="none" stroke="#263943" stroke-width="4"/>
+  <path d="M438 264H827V342H438Z" class="room unnamed"/>
+  <path d="M471 264V342M519 264V342M568 264V342M620 264V342M675 264V342M725 264V342M780 264V342" class="partition"/>
+  <path d="M447 264h15M489 264h15M537 264h15M589 264h15M641 264h15M689 264h15M735 264h15" class="door"/>
+  <path d="M725 264H780V342H725Z" class="room blue"/>
+  <path d="M798 264h18" class="door"/>
+
+  <!-- FMS, Polymères and the utility rooms below them. -->
+  <path d="M435 342H552V445H435Z" class="room lab"/>
+  <path d="M435 448H552V542H435Z" class="room warm"/>
+  <path d="M436 544H552V618H436Z" class="room unnamed"/>
+  <path d="M471 544V618M511 544V618M471 580H511" class="partition"/>
+  <path d="M435 365v15M435 470v15" class="door"/>
+
+  <!-- The courtyard meets the entrance hall; only its right-hand access walk remains. -->
+  <path d="M555 344H827V619H555Z" fill="#dbe8db" stroke="#263943" stroke-width="5"/>
+  <path d="M564 352H817V610H564Z" fill="url(#yard)"/>
+  <path d="M827 444v17" class="door"/>
+  <circle cx="650" cy="440" r="29" fill="#a2c4a9" stroke="#527269" stroke-width="3"/>
+  <circle cx="755" cy="502" r="29" fill="#a2c4a9" stroke="#527269" stroke-width="3"/>
+  <circle cx="650" cy="440" r="4" fill="#527269"/><circle cx="755" cy="502" r="4" fill="#527269"/>
+  <text x="691" y="575" class="note" text-anchor="middle">COUR INTÉRIEURE</text>
+
+  <!-- Chimie occupies the full eastern wing, with its cross-walls and exterior openings. -->
+  <path d="M851 151H969V735H851Z" class="room warm"/>
+  <path d="M851 345H969M851 534H969M851 598H969" class="partition"/>
+  <path d="M852 219v18M852 394v18M852 558v18M852 649v18M968 218v15M968 308v15M968 401v15M968 489v15M968 580v15M968 669v15" class="door"/>
+
+  <!-- Entrance hall continues beneath Polymères, with one room in its lower-right corner. -->
+  <path d="M20 657H402V735H20Z" class="room unnamed"/>
+  <path d="M74 657V735M119 657V735M167 657V735M214 657V735M262 657V735M315 657V735M357 657V698M315 698H401" class="partition"/>
+  <path d="M29 657h13M85 657h13M133 657h13M181 657h13M229 657h13M274 657h13M327 657h13M369 657h13" class="door"/>
+  <path d="M402 619H849V735H402Z" class="unnamed"/>
+  <path d="M402 619H827M849 619V735H402V619" fill="none" stroke="#263943" stroke-width="4"/>
+  <path d="M687 650H849V735H687Z" class="room unnamed"/>
+  <path d="M452 619h13M488 619h16M528 619h14M681 619h20M687 675v18M761 735h30" class="door"/>
+  <text x="547" y="686" class="note" text-anchor="middle">HALL D’ENTRÉE</text>
+  <text x="40" y="746" class="floor">RDC</text>
+</svg>
