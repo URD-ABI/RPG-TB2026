@@ -111,6 +111,8 @@ p { line-height: 1.55; }
 .avatar-body--right { transform: translateX(-50%); clip-path: inset(0 0 0 55%); }
 .avatar-gear { position: absolute; display: grid; place-items: center; width: 15%; aspect-ratio: 1; border: 3px solid #263b44; border-radius: 50%; background: #f7d981; color: #243846; font-size: clamp(16px, 3vw, 28px); box-shadow: 3px 3px 0 #33434c88; }
 .avatar-gear--weapon { left: 12%; top: 55%; }
+.character-preview--equipped .avatar-gear--weapon { left: 3%; top: 51%; width: 31%; border-radius: 14px; padding: 5px; background: #fff2cc; transform: rotate(-5deg); }
+.character-preview--equipped .avatar-gear--weapon .item-sprite { border-radius: 8px; }
 .avatar-gear--accessory { right: 10%; top: 38%; }
 .avatar-gear .item-sprite { width: 100%; height: 100%; border-radius: 50%; }
 .avatar-head { position: absolute; z-index: 1; top: 1%; left: 50%; transform: translateX(-50%); width: 42%; aspect-ratio: 1; object-fit: contain; }
@@ -205,7 +207,7 @@ p { line-height: 1.55; }
 .item-bonuses { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 8px; }
 .item-bonuses span { padding: 3px 6px; border: 1px solid #929b92; border-radius: 5px; background: #f6edcd; font-size: 11px; font-weight: 900; }
 .location-card { display: grid; grid-template-columns: 1.3fr .8fr; overflow: hidden; }
-.location-image { min-height: 380px; background: url('/assets/labo-chimie.png') center / cover; border-right: 3px solid #273a43; }
+.location-image { min-height: 380px; background: url('./assets/labo-chimie.png') center / cover; border-right: 3px solid #273a43; }
 .location-copy { padding: clamp(25px, 4vw, 52px); align-self: center; }
 .location-copy p { color: #53646a; }
 .chapter-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 24px 0 32px; }
@@ -267,7 +269,7 @@ p { line-height: 1.55; }
 .combat-heading h1 { margin: 0; }
 .combat-boss-ability { display: inline-block; margin-top: 5px; color: #6d4b77; font-weight: 800; }
 .turn-tag { color: #253c48; font-weight: 900; background: #f1d28a; border: 2px solid #2a3a44; padding: 7px 11px; border-radius: 8px; white-space: nowrap; }
-.battle-panel { min-height: 470px; position: relative; overflow: hidden; border: 5px solid #273a43; border-radius: 20px; background: linear-gradient(180deg, #0f2f3719 25%, #152b3569 100%), url('/assets/labo-chimie.png') center / cover; box-shadow: 8px 9px 0 #b6ab90; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.battle-panel { min-height: 470px; position: relative; overflow: hidden; border: 5px solid #273a43; border-radius: 20px; background: linear-gradient(180deg, #0f2f3719 25%, #152b3569 100%), url('./assets/labo-chimie.png') center / cover; box-shadow: 8px 9px 0 #b6ab90; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 .battle-top { display: flex; justify-content: space-between; gap: 18px; padding: 20px; }
 .combatant-health { min-width: 170px; max-width: 270px; flex: 1; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; background: #fff7dfed; border: 3px solid #233743; border-radius: 11px; padding: 10px 13px; font-size: 14px; }
 .combatant-health b { overflow-wrap: anywhere; }
