@@ -191,9 +191,9 @@ function progressionCard() {
   return `<section class="progression-card paper-card" aria-label="Progression du personnage"><div class="progression-heading"><div><span class="eyebrow">PROGRESSION · ${escapeHtml(classes.title)}</span><h2>Niveau ${progress.level}</h2></div><span class="point-badge">${progress.availablePoints ? `${progress.availablePoints} point${progress.availablePoints > 1 ? 's' : ''} à répartir` : 'Points répartis'}</span></div>
     <div class="xp-label"><strong>${end === null ? `${progress.xp} XP` : `${progress.xp - start} / ${end - start} XP`}</strong><span>${end === null ? 'Niveau maximum' : `${progress.xp} XP cumulés · niveau suivant à ${end}`}</span></div>
     <div class="xp-track" role="progressbar" aria-label="Expérience du niveau" aria-valuemin="${start}" aria-valuemax="${end ?? start}" aria-valuenow="${progress.xp}"><i style="width:${percent}%"></i></div>
-    <div class="stat-list">${groups.map(group => `<section class="stat-group"><h3>${group.title}</h3>${group.entries.map(item => `<div class="stat-row"><div><strong>${item.label} <span>+${progress.stats[item.id]}</span></strong><small>${item.effect}</small></div><b>${item.total}</b><button type="button" class="stat-add" data-stat="${item.id}" data-spent="${progress.spentPoints}" aria-label="Ajouter un point en ${item.label}" ${progress.availablePoints === 0 || (progress.caps[item.id] !== null && progress.stats[item.id] >= progress.caps[item.id]) ? 'disabled' : ''}>+</button></div>`).join('')}</section>`).join('')}</div>
+    <div class="stat-list">${groups.map(group => `<section class="stat-group"><h3>${group.title}</h3>${group.entries.map(item => `<div class="stat-row"><div><strong>${item.label} <span>+${progress.stats[item.id]}</span></strong><small>${item.effect}</small></div><b>${item.total}</b><button type="button" class="stat-add" data-stat="${item.id}" data-spent="${progress.spentPoints}" aria-label="Ajouter un point en ${item.label}" ${progress.availablePoints === 0 ? 'disabled' : ''}>+</button></div>`).join('')}</section>`).join('')}</div>
     <div class="class-roadmap"><h3>Parcours de chercheur</h3><p>Chaque palier accorde deux bonus permanents, une tenue et une arme offertes. Les anciens objets restent dans votre sac. Un seul choix est possible par palier.</p>${stage('specialization', 20, classes.specialization, classes.specializationOptions)}${stage('advanced', 35, classes.advanced, classes.advancedOptions)}</div>
-    <p class="progression-note">Chaque statistique commence à 1 et vous recevez 5 points libres à la création. Les totaux incluent l’équipement et les bonus de classe. Les changements s’appliquent au prochain combat.</p></section>`;
+    <p class="progression-note">Chaque statistique commence à 1 et vous recevez 5 points libres à la création. Vous pouvez concentrer tous vos points dans une seule statistique. Les totaux incluent l’équipement et les bonus de classe. Les changements s’appliquent au prochain combat.</p></section>`;
 }
 
 function refreshProgressionCard() {
@@ -233,8 +233,7 @@ function attachStatButtons() {
       } catch {
         errorLine(error);
         app.querySelectorAll('[data-stat]').forEach(item => {
-          const { stats, caps, availablePoints } = state.me.progression;
-          item.disabled = availablePoints === 0 || (caps[item.dataset.stat] !== null && stats[item.dataset.stat] >= caps[item.dataset.stat]);
+          item.disabled = state.me.progression.availablePoints === 0;
         });
       }
     }
