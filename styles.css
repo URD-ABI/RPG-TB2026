@@ -354,6 +354,14 @@ p { line-height: 1.55; }
 .battle-bottom { position: relative; z-index: 1; background: #203640e8; color: #fff7e5; padding: 10px 22px; min-height: 74px; }
 .battle-message { margin: 0; font-weight: 900; }
 .battle-intention { margin: 2px 0 0; font-size: 13px; opacity: .88; }
+.turn-feedback { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.turn-feedback-step { display: grid; gap: 3px; padding: 10px 13px; border: 2px solid #ead9b6; border-radius: 10px; background: #f8edd5; color: #243846; }
+.turn-feedback-step--enemy { background: #e8d6d5; border-color: #d7a8a3; animation: riposte-in .25s ease-out; }
+.turn-feedback-step strong { font-size: 14px; }
+.turn-feedback-step span { font-size: 20px; font-weight: 900; }
+.turn-feedback-step small { font-size: 12px; }
+.turn-wait { align-self: center; color: #243846; font-weight: 800; }
+@keyframes riposte-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
 .charge-meter { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 5px 8px; margin-top: 4px; font-size: 11px; font-weight: 900; color: #263c46; }
 .charge-pips { display: flex; gap: 4px; }
 .charge-pips i { display: block; width: 25px; height: 12px; border: 2px solid #405763; border-radius: 4px; background: linear-gradient(90deg, #f4bd63 var(--fill), #536772 var(--fill)); }

@@ -9,10 +9,11 @@ import { portraitIdFromUrl, portraitPoseStyle } from './portrait-poses.js';
 import { SKIN_TONES, DEFAULT_SKIN_TONE } from './skin-tones.js';
 import { applyOutfitSkin } from './outfit-skin.js';
 import { browserSupabaseApi } from './supabase-api.js';
+import { turnFeedback } from './combat-feedback.js';
 
 const app = document.querySelector('#app');
 const remoteApi = browserSupabaseApi();
-const state = { me: null, fight: null, gear: null, portraits: [], shopkeepers: {}, skills: null, world: null, locations: [], access: null, event: null, secretEvent: null, specialEvent: null, florentEvent: null, training: null, roomTab: 'combat', roomNotice: null, bestiary: [], bestiaryCategory: 'common', leaderboard: [], selectedFloor: 'rdc', selectedLocation: null, screen: 'loading', equipmentReturn: 'map' };
+const state = { me: null, fight: null, turnPlayback: null, gear: null, portraits: [], shopkeepers: {}, skills: null, world: null, locations: [], access: null, event: null, secretEvent: null, specialEvent: null, florentEvent: null, training: null, roomTab: 'combat', roomNotice: null, bestiary: [], bestiaryCategory: 'common', leaderboard: [], selectedFloor: 'rdc', selectedLocation: null, screen: 'loading', equipmentReturn: 'map' };
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 
 async function api(url, options = {}) {
@@ -604,7 +605,11 @@ function eventScreen() {
 }
 
 function combatScreen() {
-  const fight = state.fight, done = fight.status !== 'active';
+  const fight = state.fight;
+  const playback = state.turnPlayback?.fightId === fight.id && state.turnPlayback?.turn === fight.turn ? state.turnPlayback : null;
+  const revealingPlayer = playback?.phase === 'player';
+  const shownFight = revealingPlayer ? { ...fight, playerHp: playback.feedback.playerHpAfterAction, status: 'active' } : fight;
+  const done = fight.status !== 'active' && !revealingPlayer;
   const moveLocked = move => fight.level !== undefined && fight.level < move.requiredLevel;
   const moveUnavailable = move => moveLocked(move) || (move.source === 'shop' && !fight.unlockedSkills?.includes(move.action)) || fight.charge < move.cost;
   const visibleMoves = SPECIAL_MOVES.filter(move => !moveLocked(move));
@@ -621,17 +626,16 @@ function combatScreen() {
   const result = fight.status === 'won' ? `${fight.message} Vous gagnez ${fight.coinsGained ?? (fight.kind === 'boss' ? 8 : 5)} pièces${fight.xpGained ? ` et ${fight.xpGained} XP` : ''}.` : fight.message;
   shell(`<section class="combat-heading"><div><span class="eyebrow">COMBAT AU TOUR PAR TOUR · ${escapeHtml(place.name)}${fight.kind === 'boss' ? ` · BOSS NIV. ${fight.monsterLevel}` : ''}</span><h1>${escapeHtml(fight.monsterName)}</h1>${fight.kind === 'boss' ? `<small class="combat-boss-ability">${escapeHtml(fight.bossAbilityLabel)}</small>` : ''}</div>
     <span class="turn-tag">Tour ${fight.turn + 1}</span></section>
-    <section class="battle-panel ${fight.status} ${collectiveFinale ? 'collective-finale' : ''}" ${place.image ? `style="background-image:linear-gradient(180deg,#0f2f3719 25%,#152b3569 100%),url('./assets/${escapeHtml(place.image)}')"` : ''} aria-label="Combat dans ${escapeHtml(place.name)}">
-      <div class="battle-top"><div class="combatant-health"><b>${escapeHtml(state.me.nickname)}</b><span>${fight.playerHp} / ${fight.playerMaxHp} PV</span>
-      <div class="health-track"><i style="width:${100 * fight.playerHp / fight.playerMaxHp}%"></i></div>${gauge}${fight.playerDefenseBuff || fight.playerAuraBuff ? '<small class="combat-status">◆ Défense et Aura +10 %</small>' : ''}${fight.playerDebuffTurns > 0 ? `<small class="combat-status">◆ Défense et Aura −20 % · ${fight.playerDebuffTurns} tours</small>` : ''}</div>
+    <section class="battle-panel ${shownFight.status} ${collectiveFinale ? 'collective-finale' : ''}" ${place.image ? `style="background-image:linear-gradient(180deg,#0f2f3719 25%,#152b3569 100%),url('./assets/${escapeHtml(place.image)}')"` : ''} aria-label="Combat dans ${escapeHtml(place.name)}">
+      <div class="battle-top"><div class="combatant-health"><b>${escapeHtml(state.me.nickname)}</b><span>${shownFight.playerHp} / ${fight.playerMaxHp} PV</span>
+      <div class="health-track"><i style="width:${100 * shownFight.playerHp / fight.playerMaxHp}%"></i></div>${gauge}${fight.playerDefenseBuff || fight.playerAuraBuff ? '<small class="combat-status">◆ Défense et Aura +10 %</small>' : ''}${fight.playerDebuffTurns > 0 ? `<small class="combat-status">◆ Défense et Aura −20 % · ${fight.playerDebuffTurns} tours</small>` : ''}</div>
       <div class="combatant-health enemy-health"><b>${escapeHtml(fight.monsterName)}</b><span>${fight.monsterHp} / ${fight.monsterMaxHp} PV</span>
       <div class="health-track"><i style="width:${100 * fight.monsterHp / fight.monsterMaxHp}%"></i></div>${fight.bossShieldTurns > 0 ? '<small class="combat-status">◆ Bouclier : prochains dégâts reçus −50 %</small>' : ''}${fight.monsterDefenseDebuffTurns > 0 ? `<small class="combat-status">⚔ Défense −20 % · ${fight.monsterDefenseDebuffTurns} tours</small>` : ''}${fight.monsterAuraDebuffTurns > 0 ? `<small class="combat-status">✦ Aura −20 % · ${fight.monsterAuraDebuffTurns} tours</small>` : ''}</div></div>
       <div class="battle-actors">${avatar(state.me.presentation, state.me.portraitUrl, 'battle-avatar', state.me.outfitId, state.gear?.inventory.equipped)}
       ${fight.kind === 'boss' ? bossArt(fight.bossChapter, collectiveFinale ? state.world?.bosses.find(item => item.chapter === fight.bossChapter)?.identity?.portraitUrl : null, collectiveFinale ? state.world?.bosses.find(item => item.chapter === fight.bossChapter)?.identity?.name : null) : fight.monsterId ? `<div class="battle-monster">${monsterArt(fight.monsterArtId || fight.monsterId, false, fight.monsterName, fight.monsterTier)}</div>` : '<div class="blob" role="img" aria-label="Monstre du laboratoire"><span>••<br>◡</span></div>'}</div>
       ${collectiveFinale ? '<div class="finale-banner" role="status"><span class="finale-sparks" aria-hidden="true">✦ ✦ ✦</span><strong>Attaque finale collective !</strong><small>Les contributions de l’équipe révèlent l’organisateur.</small></div>' : ''}
-      <div class="battle-bottom"><p class="battle-message" aria-live="polite">${escapeHtml(done ? result : fight.message)}</p>
-      <p class="battle-intention">${done ? 'Combat terminé' : escapeHtml(fight.intention)}</p></div></section>
-    ${done ? `<div class="battle-actions battle-actions--finished">${collectiveFinale || fight.kind === 'event' ? '' : '<button id="retry-fight" class="primary-button">Nouveau combat</button>'}<button id="back-map" class="secondary-button">${collectiveFinale ? 'Voir la révélation' : fight.kind === 'event' ? 'Retour à la salle' : 'Retour à la carte'}</button></div>`
+      <div class="battle-bottom">${playback ? `<div class="turn-feedback" aria-live="polite"><div class="turn-feedback-step turn-feedback-step--player"><strong>Votre action · ${escapeHtml(playback.feedback.action)}</strong><span>${playback.feedback.playerDamage ? `−${playback.feedback.playerDamage} PV au monstre` : 'Vous vous protégez ou vous préparez votre action.'}</span></div>${!revealingPlayer && playback.feedback.enemyActed ? `<div class="turn-feedback-step turn-feedback-step--enemy"><strong>Riposte de ${escapeHtml(fight.monsterName)}</strong><span>${playback.feedback.enemyDamage ? `−${playback.feedback.enemyDamage} PV pour vous` : 'Aucun dégât reçu'}</span><small>${escapeHtml(playback.feedback.enemyAction)}</small></div>` : ''}</div>${revealingPlayer && playback.feedback.enemyActed ? '<p class="battle-intention">La riposte arrive…</p>' : done ? `<p class="battle-intention">${escapeHtml(result)}</p>` : `<p class="battle-intention">${escapeHtml(fight.intention)}</p>`}` : `<p class="battle-message" aria-live="polite">${escapeHtml(done ? result : fight.message)}</p><p class="battle-intention">${done ? 'Combat terminé' : escapeHtml(fight.intention)}</p>`}</div></section>
+    ${revealingPlayer ? '<div class="battle-actions battle-actions--finished"><span class="turn-wait">La riposte arrive…</span></div>' : done ? `<div class="battle-actions battle-actions--finished">${collectiveFinale || fight.kind === 'event' ? '' : '<button id="retry-fight" class="primary-button">Nouveau combat</button>'}<button id="back-map" class="secondary-button">${collectiveFinale ? 'Voir la révélation' : fight.kind === 'event' ? 'Retour à la salle' : 'Retour à la carte'}</button></div>`
       : `<div class="battle-actions" role="group" aria-label="Actions de combat">
       <button data-menu="attack" class="action-button attack" aria-expanded="false" aria-controls="attack-menu"><span aria-hidden="true">⚔</span><strong>Attaque</strong><small>Physique ou magique · +0,5 jauge</small></button>
       <button data-menu="skills" class="action-button technique" aria-expanded="false" aria-controls="skills-menu"><span aria-hidden="true">✦</span><strong>Compétences</strong><small>${knownMoves.length} débloquée${knownMoves.length > 1 ? 's' : ''}</small></button>
@@ -650,12 +654,23 @@ function combatScreen() {
     }
   }));
   app.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', async () => {
+    const actionLabel = button.querySelector('strong')?.textContent.trim() || button.textContent.trim();
     app.querySelectorAll('[data-action]').forEach(item => { item.disabled = true; });
     app.querySelectorAll('[data-menu], #retreat').forEach(item => { item.disabled = true; });
     try {
       state.fight = await api(`/api/encounters/${fight.id}/turn`, { method: 'POST', body: JSON.stringify({ turn: fight.turn, action: button.dataset.action }) });
       if (state.fight.status !== 'active') { state.me = await api('/api/me'); await loadGear(); await loadWorld(); }
+      state.turnPlayback = { fightId: state.fight.id, turn: state.fight.turn, phase: 'player',
+        feedback: turnFeedback(fight, state.fight, actionLabel) };
       render();
+      const completedTurn = state.fight.turn;
+      setTimeout(() => {
+        if (state.screen === 'combat' && state.fight?.id === fight.id && state.fight.turn === completedTurn
+          && state.turnPlayback?.phase === 'player') {
+          state.turnPlayback.phase = 'settled';
+          render();
+        }
+      }, 1100);
     } catch (error) {
       errorLine(error);
       app.querySelectorAll('[data-action]').forEach(item => {
