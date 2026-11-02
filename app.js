@@ -12,7 +12,7 @@ import { browserSupabaseApi } from './supabase-api.js';
 
 const app = document.querySelector('#app');
 const remoteApi = browserSupabaseApi();
-const state = { me: null, fight: null, gear: null, portraits: [], shopkeepers: {}, skills: null, world: null, locations: [], access: null, event: null, secretEvent: null, specialEvent: null, florentEvent: null, training: null, roomTab: 'combat', roomNotice: null, bestiary: [], bestiaryCategory: 'common', selectedFloor: 'rdc', selectedLocation: null, screen: 'loading', equipmentReturn: 'map' };
+const state = { me: null, fight: null, gear: null, portraits: [], shopkeepers: {}, skills: null, world: null, locations: [], access: null, event: null, secretEvent: null, specialEvent: null, florentEvent: null, training: null, roomTab: 'combat', roomNotice: null, bestiary: [], bestiaryCategory: 'common', leaderboard: [], selectedFloor: 'rdc', selectedLocation: null, screen: 'loading', equipmentReturn: 'map' };
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 
 async function api(url, options = {}) {
@@ -44,13 +44,13 @@ function itemBonuses(item) {
 function itemArt(item) {
   if (item.slot === 'outfit') {
     const appearance = item.appearance?.[state.me.presentation];
-    const source = `./assets/${escapeHtml(appearance)}.png`;
+    const source = `/assets/${escapeHtml(appearance)}.png`;
     return `<span class="item-outfit-frame"><img class="item-outfit-image ${appearance?.endsWith('-pair') ? `item-outfit-image--pair ${state.me.presentation === 'feminine' ? 'item-outfit-image--right' : ''}` : ''}" src="${source}" data-skin-source="${source}" alt="" loading="lazy"></span>`;
   }
   const art = gearArt(item.id);
   if (!art) return itemIcon(item);
-  if (art.kind === 'single') return `<img class="item-single-art" src="./assets/${art.file}.png" alt="${escapeHtml(item.name)}" loading="lazy">`;
-  return `<span class="item-sprite" role="img" aria-label="${escapeHtml(item.name)}" style="background-image:url('./assets/${art.file}.png');background-size:${art.rows === 3 ? '315% 315%' : '315% 210%'};background-position:${art.column * 50}% ${art.row * (art.rows === 3 ? 50 : 100)}%"></span>`;
+  if (art.kind === 'single') return `<img class="item-single-art" src="/assets/${art.file}.png" alt="${escapeHtml(item.name)}" loading="lazy">`;
+  return `<span class="item-sprite" role="img" aria-label="${escapeHtml(item.name)}" style="background-image:url('/assets/${art.file}.png');background-size:${art.rows === 3 ? '315% 315%' : '315% 210%'};background-position:${art.column * 50}% ${art.row * (art.rows === 3 ? 50 : 100)}%"></span>`;
 }
 
 function avatar(presentation, portraitUrl, extraClass = '', outfit = 'labcoat', equipped = {}) {
@@ -64,7 +64,7 @@ function avatar(presentation, portraitUrl, extraClass = '', outfit = 'labcoat', 
   const head = portraitUrl
     ? `<img class="avatar-head ${illustrated ? 'avatar-head--illustrated' : 'avatar-head--legacy'}" src="${escapeHtml(portraitUrl)}" alt="Visage du personnage"${poseStyle ? ` style="${poseStyle}"` : ''}>`
     : '<span class="avatar-head avatar-head--fallback" aria-label="Choisissez une tête">?</span>';
-  const bodySource = `./assets/${escapeHtml(appearance)}.png`;
+  const bodySource = `/assets/${escapeHtml(appearance)}.png`;
   const body = paired ? `<span class="avatar-body-frame"><img class="avatar-body avatar-body--pair ${kind === 'feminine' ? 'avatar-body--right' : ''}" src="${bodySource}" data-skin-source="${bodySource}" alt="${escapeHtml(item?.name || 'Blouse de chercheur')}"></span>`
     : `<img class="avatar-body" src="${bodySource}" data-skin-source="${bodySource}" alt="${escapeHtml(item?.name || 'Tenue du personnage')}">`;
   const weapon = state.gear?.catalog.find(entry => entry.id === equipped.weapon);
@@ -96,6 +96,12 @@ function roomRoute(slug) { return `#/lieu/${slug}`; }
 function setRoute(hash) { if (window.location.hash !== hash) window.location.hash = hash; }
 
 async function syncRoute() {
+  if (window.location.hash === '#/classement') {
+    state.leaderboard = (await api('/api/leaderboard')).players;
+    state.screen = 'leaderboard';
+    render();
+    return;
+  }
   if (window.location.hash === '#/bestiaire') {
     state.bestiary = (await api('/api/bestiary')).monsters;
     state.screen = 'bestiary';
@@ -331,9 +337,9 @@ function mapScreen() {
   const rooms = state.locations.filter(item => item.floor === floor && item.mapVisible !== false);
   const revealed = state.world.bosses.filter(item => item.status === 'revealed');
   shell(`<section class="map-intro"><div><span class="eyebrow">EXPLORATION · TB2026</span><h1>Carte des laboratoires</h1><p>Choisissez une salle sur le plan. Les lieux peuvent être explorés à votre rythme ; les organisateurs apparaissent quand l’équipe les annonce.</p></div>
-    <div class="map-controls"><button id="edit-character" class="secondary-button">Mon personnage${state.me.progression.availablePoints ? ` · ${state.me.progression.availablePoints} point${state.me.progression.availablePoints > 1 ? 's' : ''}` : ''}</button><button id="open-wardrobe" class="secondary-button">Équipement</button><button id="open-bestiary" class="secondary-button">Bestiaire</button><button id="logout" class="text-button">Changer de code</button></div></section>
+    <div class="map-controls"><button id="edit-character" class="secondary-button">Mon personnage${state.me.progression.availablePoints ? ` · ${state.me.progression.availablePoints} point${state.me.progression.availablePoints > 1 ? 's' : ''}` : ''}</button><button id="open-wardrobe" class="secondary-button">Équipement</button><button id="open-bestiary" class="secondary-button">Bestiaire</button><button id="open-leaderboard" class="secondary-button">Classement</button><button id="logout" class="text-button">Changer de code</button></div></section>
     <div class="floor-tabs" role="group" aria-label="Étage du bâtiment"><button data-floor="rdc" class="${floor === 'rdc' ? 'active' : ''}" aria-pressed="${floor === 'rdc'}">RDC</button><button data-floor="first" class="${floor === 'first' ? 'active' : ''}" aria-pressed="${floor === 'first'}">1er étage</button></div>
-    <section class="building-map-card paper-card" aria-label="Plan du ${floor === 'rdc' ? 'rez-de-chaussée' : 'premier étage'}"><div class="building-map-scroll"><div class="building-map" style="aspect-ratio:${floor === 'rdc' ? '1000 / 760' : '1000 / 700'}"><img src="./maps/${floor === 'rdc' ? 'rdc' : 'first-floor'}.svg" alt="Plan illustré du ${floor === 'rdc' ? 'rez-de-chaussée' : 'premier étage'}"><div class="map-hotspots">${rooms.map(mapRoomPin).join('')}</div></div></div></section>
+    <section class="building-map-card paper-card" aria-label="Plan du ${floor === 'rdc' ? 'rez-de-chaussée' : 'premier étage'}"><div class="building-map-scroll"><div class="building-map" style="aspect-ratio:${floor === 'rdc' ? '1000 / 760' : '1000 / 700'}"><img src="/maps/${floor === 'rdc' ? 'rdc' : 'first-floor'}.svg" alt="Plan illustré du ${floor === 'rdc' ? 'rez-de-chaussée' : 'premier étage'}"><div class="map-hotspots">${rooms.map(mapRoomPin).join('')}</div></div></div></section>
     <section class="map-location-list"><span class="eyebrow">SALLES DU ${floor === 'rdc' ? 'RDC' : '1ER ÉTAGE'}</span><div>${rooms.map(room => `<button class="secondary-button" data-room="${room.slug}" ${room.requiresMagnien && !state.access.unlocked ? 'disabled' : ''}>${escapeHtml(room.name)}${room.requiresMagnien && !state.access.unlocked ? ' · péage Aile Magnien' : room.requiresMysteryKey && !state.access.edbUnlocked ? ' · Clé Mystère requise' : ''}</button>`).join('')}</div></section>
     ${bossBanner(state.world)}
     ${revealed.map(item => `<section class="reveal-card paper-card">${bossArt(item.chapter, item.identity.portraitUrl, item.identity.name)}<div><span class="eyebrow">ORGANISATEUR RÉVÉLÉ · BOSS ${item.chapter}</span><h2>${escapeHtml(item.identity.name)}</h2><p>${escapeHtml(item.identity.role)}</p><p>${escapeHtml(item.identity.message)}</p></div></section>`).join('')}
@@ -341,6 +347,7 @@ function mapScreen() {
   app.querySelector('#edit-character').addEventListener('click', () => { state.screen = 'character'; render(); });
   app.querySelector('#open-wardrobe').addEventListener('click', () => { state.equipmentReturn = 'map'; state.screen = 'wardrobe'; render(); });
   app.querySelector('#open-bestiary').addEventListener('click', () => setRoute('#/bestiaire'));
+  app.querySelector('#open-leaderboard').addEventListener('click', () => setRoute('#/classement'));
   app.querySelector('#logout').addEventListener('click', async () => {
     try { await api('/api/session', { method: 'DELETE' }); state.me = null; state.fight = null; state.gear = null; state.world = null; state.screen = 'login'; render(); }
     catch (error) { errorLine(error); }
@@ -359,7 +366,7 @@ function roomScreen() {
   if (!room) { state.screen = 'map'; mapScreen(); return; }
   const locked = room.requiresMagnien && !state.access.unlocked;
   const mysteryLocked = room.requiresMysteryKey && !state.access.edbUnlocked;
-  const image = room.image ? `<img src="./assets/${escapeHtml(room.image)}" alt="${escapeHtml(room.name)} illustré à partir d’une photo du lieu">` : `<div class="room-illustration" role="img" aria-label="Illustration provisoire de ${escapeHtml(room.name)}"><span aria-hidden="true">✦</span><strong>${escapeHtml(room.name)}</strong><small>Décor à venir</small></div>`;
+  const image = room.image ? `<img src="/assets/${escapeHtml(room.image)}" alt="${escapeHtml(room.name)} illustré à partir d’une photo du lieu">` : `<div class="room-illustration" role="img" aria-label="Illustration provisoire de ${escapeHtml(room.name)}"><span aria-hidden="true">✦</span><strong>${escapeHtml(room.name)}</strong><small>Décor à venir</small></div>`;
   const toll = room.isToll || locked ? `<section class="toll-card paper-card"><span class="eyebrow">PÉAGE DE L’AILE MAGNIEN</span><h2>${state.access.unlocked ? 'Passage ouvert' : 'Débloquer les salles de l’Aile Magnien'}</h2><p>${state.access.unlocked ? 'Votre accès est permanent. Vous pouvez désormais entrer dans la Salle de réunion et le Bureau Kévin.' : `Le passage coûte ${state.access.price} pièces une seule fois. Votre solde : ${state.access.coins} pièces.`}</p>${state.access.unlocked ? '<div class="toll-actions"><button id="go-meeting" class="primary-button">Entrer dans la Salle de réunion</button><button id="go-kevin" class="secondary-button">Entrer dans le Bureau Kévin</button></div>' : `<button id="pay-toll" class="primary-button" ${state.access.coins < state.access.price ? 'disabled' : ''}>Payer ${state.access.price} pièces</button>${state.access.coins < state.access.price ? '<p>Gagnez encore des pièces dans les laboratoires pour ouvrir ce passage.</p>' : ''}`}</section>` : '';
   const mysteryGate = mysteryLocked ? `<section class="toll-card paper-card"><span class="eyebrow">ACCÈS VERROUILLÉ · EDB</span><h2>La Clé Mystère</h2><p>${state.access.mysteryKeyOwned ? 'Vous possédez la Clé Mystère. Utilisez-la pour ouvrir cette salle définitivement.' : 'Achetez la Clé Mystère pour 500 pièces dans la Boutique de Bibi et Bobo, au Bureau Thésards.'}</p>${state.access.mysteryKeyOwned ? '<button id="use-mystery-key" class="primary-button">Utiliser la Clé Mystère</button>' : '<button id="go-thesards" class="secondary-button">Voir le Bureau Thésards</button>'}</section>` : '';
   const activities = locked || mysteryLocked ? '' : renderRoomActivities(room, {
@@ -517,6 +524,12 @@ function bestiaryScreen() {
   }));
 }
 
+function leaderboardScreen() {
+  const rows = state.leaderboard;
+  shell(`<section class="bestiary-intro"><button id="back-map" class="text-button">← Retour à la carte</button><span class="eyebrow">LES CHERCHEURS · TB2026</span><h1>Classement des joueurs</h1><p>Classement par niveau, puis par expérience cumulée. Les nouveaux résultats apparaissent à chaque ouverture de cette page.</p></section><section class="leaderboard" aria-label="Classement des joueurs">${rows.length ? rows.map(row => `<div class="leaderboard-row ${row.isSelf ? 'leaderboard-row--self' : ''}"><strong class="leaderboard-rank">#${row.rank}</strong><span class="leaderboard-name">${escapeHtml(row.nickname)}${row.isSelf ? ' <small>Vous</small>' : ''}</span><span class="leaderboard-level">Niv. ${row.level}</span><span class="leaderboard-xp">${row.xp.toLocaleString('fr-FR')} XP</span></div>`).join('') : '<p>Aucun personnage créé pour le moment.</p>'}</section><p data-error class="form-error" hidden role="alert"></p>`, 'Classement');
+  app.querySelector('#back-map').addEventListener('click', () => setRoute(`#/carte/${state.selectedFloor}`));
+}
+
 function wardrobeScreen() {
   const { catalog: items, inventory: bag } = state.gear;
   const order = ['outfit', 'weapon', 'accessory'];
@@ -608,7 +621,7 @@ function combatScreen() {
   const result = fight.status === 'won' ? `${fight.message} Vous gagnez ${fight.coinsGained ?? (fight.kind === 'boss' ? 8 : 5)} pièces${fight.xpGained ? ` et ${fight.xpGained} XP` : ''}.` : fight.message;
   shell(`<section class="combat-heading"><div><span class="eyebrow">COMBAT AU TOUR PAR TOUR · ${escapeHtml(place.name)}${fight.kind === 'boss' ? ` · BOSS NIV. ${fight.monsterLevel}` : ''}</span><h1>${escapeHtml(fight.monsterName)}</h1>${fight.kind === 'boss' ? `<small class="combat-boss-ability">${escapeHtml(fight.bossAbilityLabel)}</small>` : ''}</div>
     <span class="turn-tag">Tour ${fight.turn + 1}</span></section>
-    <section class="battle-panel ${fight.status} ${collectiveFinale ? 'collective-finale' : ''}" ${place.image ? `style="background-image:linear-gradient(180deg,#0f2f3719 25%,#152b3569 100%),url('./assets/${escapeHtml(place.image)}')"` : ''} aria-label="Combat dans ${escapeHtml(place.name)}">
+    <section class="battle-panel ${fight.status} ${collectiveFinale ? 'collective-finale' : ''}" ${place.image ? `style="background-image:linear-gradient(180deg,#0f2f3719 25%,#152b3569 100%),url('/assets/${escapeHtml(place.image)}')"` : ''} aria-label="Combat dans ${escapeHtml(place.name)}">
       <div class="battle-top"><div class="combatant-health"><b>${escapeHtml(state.me.nickname)}</b><span>${fight.playerHp} / ${fight.playerMaxHp} PV</span>
       <div class="health-track"><i style="width:${100 * fight.playerHp / fight.playerMaxHp}%"></i></div>${gauge}${fight.playerDefenseBuff || fight.playerAuraBuff ? '<small class="combat-status">◆ Défense et Aura +10 %</small>' : ''}${fight.playerDebuffTurns > 0 ? `<small class="combat-status">◆ Défense et Aura −20 % · ${fight.playerDebuffTurns} tours</small>` : ''}</div>
       <div class="combatant-health enemy-health"><b>${escapeHtml(fight.monsterName)}</b><span>${fight.monsterHp} / ${fight.monsterMaxHp} PV</span>
@@ -672,6 +685,7 @@ function render() {
   else if (state.screen === 'shop' && state.skills) shopScreen();
   else if (state.screen === 'event' && state.event) eventScreen();
   else if (state.screen === 'bestiary') bestiaryScreen();
+  else if (state.screen === 'leaderboard') leaderboardScreen();
   else if (state.screen === 'combat' && state.fight) combatScreen();
   else shell('<section class="welcome-card paper-card"><h1>Chargement de l’aventure…</h1></section>');
   window.scrollTo(0, 0);

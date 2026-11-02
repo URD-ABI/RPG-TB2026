@@ -205,7 +205,7 @@ p { line-height: 1.55; }
 .item-bonuses { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 8px; }
 .item-bonuses span { padding: 3px 6px; border: 1px solid #929b92; border-radius: 5px; background: #f6edcd; font-size: 11px; font-weight: 900; }
 .location-card { display: grid; grid-template-columns: 1.3fr .8fr; overflow: hidden; }
-.location-image { min-height: 380px; background: url('./assets/labo-chimie.png') center / cover; border-right: 3px solid #273a43; }
+.location-image { min-height: 380px; background: url('/assets/labo-chimie.png') center / cover; border-right: 3px solid #273a43; }
 .location-copy { padding: clamp(25px, 4vw, 52px); align-self: center; }
 .location-copy p { color: #53646a; }
 .chapter-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 24px 0 32px; }
@@ -267,7 +267,7 @@ p { line-height: 1.55; }
 .combat-heading h1 { margin: 0; }
 .combat-boss-ability { display: inline-block; margin-top: 5px; color: #6d4b77; font-weight: 800; }
 .turn-tag { color: #253c48; font-weight: 900; background: #f1d28a; border: 2px solid #2a3a44; padding: 7px 11px; border-radius: 8px; white-space: nowrap; }
-.battle-panel { min-height: 470px; position: relative; overflow: hidden; border: 5px solid #273a43; border-radius: 20px; background: linear-gradient(180deg, #0f2f3719 25%, #152b3569 100%), url('./assets/labo-chimie.png') center / cover; box-shadow: 8px 9px 0 #b6ab90; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.battle-panel { min-height: 470px; position: relative; overflow: hidden; border: 5px solid #273a43; border-radius: 20px; background: linear-gradient(180deg, #0f2f3719 25%, #152b3569 100%), url('/assets/labo-chimie.png') center / cover; box-shadow: 8px 9px 0 #b6ab90; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 .battle-top { display: flex; justify-content: space-between; gap: 18px; padding: 20px; }
 .combatant-health { min-width: 170px; max-width: 270px; flex: 1; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; background: #fff7dfed; border: 3px solid #233743; border-radius: 11px; padding: 10px 13px; font-size: 14px; }
 .combatant-health b { overflow-wrap: anywhere; }
@@ -303,6 +303,14 @@ p { line-height: 1.55; }
 .bestiary-intro { max-width: 850px; margin-bottom: 25px; }
 .bestiary-intro .text-button { display: block; margin-bottom: 15px; }
 .bestiary-intro > p { max-width: 690px; color: #52646a; font-size: 18px; }
+.leaderboard { display: grid; gap: 12px; max-width: 850px; }
+.leaderboard-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) 100px 120px; gap: 12px; align-items: center; padding: 15px 18px; border: 3px solid #273a43; border-radius: 12px; background: #f4e7c5; box-shadow: 4px 5px 0 #bcb39d; }
+.leaderboard-row--self { background: #f5d29b; border-color: #b05843; }
+.leaderboard-rank { font: 900 27px Georgia, Cambria, serif; }
+.leaderboard-name { min-width: 0; overflow-wrap: anywhere; font-weight: 900; font-size: 19px; }
+.leaderboard-name small { color: #9a4e3d; font-size: 13px; }
+.leaderboard-level, .leaderboard-xp { font-weight: 800; text-align: right; }
+@media (max-width: 600px) { .leaderboard-row { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 7px; padding: 12px; } .leaderboard-xp { grid-column: 2 / -1; text-align: left; } }
 .bestiary-progress { display: flex; gap: 11px; align-items: baseline; flex-wrap: wrap; width: fit-content; padding: 11px 17px; border: 3px solid #263b43; border-radius: 10px; background: #f5db9d; font-weight: 900; box-shadow: 3px 4px 0 #b9af96; }
 .bestiary-progress strong { font: 900 26px Georgia, Cambria, serif; }
 .bestiary-progress small { margin-left: 11px; color: #586365; }
