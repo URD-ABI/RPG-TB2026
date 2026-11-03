@@ -111,8 +111,8 @@ p { line-height: 1.55; }
 .avatar-body--right { transform: translateX(-50%); clip-path: inset(0 0 0 55%); }
 .avatar-gear { position: absolute; display: grid; place-items: center; width: 15%; aspect-ratio: 1; border: 3px solid #263b44; border-radius: 50%; background: #f7d981; color: #243846; font-size: clamp(16px, 3vw, 28px); box-shadow: 3px 3px 0 #33434c88; }
 .avatar-gear--weapon { left: 12%; top: 55%; }
-.character-preview--equipped .avatar-gear--weapon { left: 3%; top: 51%; width: 31%; border-radius: 14px; padding: 5px; background: #fff2cc; transform: rotate(-5deg); }
-.character-preview--equipped .avatar-gear--weapon .item-sprite { border-radius: 8px; }
+.character-preview--equipped .avatar-gear--weapon, .battle-avatar .avatar-gear--weapon { left: 3%; top: 51%; width: 31%; border-radius: 14px; padding: 5px; background: #fff2cc; transform: rotate(-5deg); }
+.character-preview--equipped .avatar-gear--weapon .item-sprite, .battle-avatar .avatar-gear--weapon .item-sprite { border-radius: 8px; }
 .avatar-gear--accessory { right: 10%; top: 38%; }
 .avatar-gear .item-sprite { width: 100%; height: 100%; border-radius: 50%; }
 .avatar-head { position: absolute; z-index: 1; top: 1%; left: 50%; transform: translateX(-50%); width: 42%; aspect-ratio: 1; object-fit: contain; }
