@@ -270,6 +270,7 @@ p { line-height: 1.55; }
 .combat-boss-ability { display: inline-block; margin-top: 5px; color: #6d4b77; font-weight: 800; }
 .turn-tag { color: #253c48; font-weight: 900; background: #f1d28a; border: 2px solid #2a3a44; padding: 7px 11px; border-radius: 8px; white-space: nowrap; }
 .battle-panel { min-height: 470px; position: relative; overflow: hidden; border: 5px solid #273a43; border-radius: 20px; background: linear-gradient(180deg, #0f2f3719 25%, #152b3569 100%), url('./assets/labo-chimie.png') center / cover; box-shadow: 8px 9px 0 #b6ab90; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.battle-panel--event { min-height: 540px; }
 .battle-top { display: flex; justify-content: space-between; gap: 18px; padding: 20px; }
 .combatant-health { min-width: 170px; max-width: 270px; flex: 1; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; background: #fff7dfed; border: 3px solid #233743; border-radius: 11px; padding: 10px 13px; font-size: 14px; }
 .combatant-health b { overflow-wrap: anywhere; }
@@ -290,6 +291,10 @@ p { line-height: 1.55; }
 .blob { width: 160px; height: 130px; margin-bottom: 20px; display: grid; place-items: center; border: 5px solid #312440; border-radius: 40% 52% 39% 48%; background: radial-gradient(circle at 40% 28%, #bda0d6, #734695 65%, #402359); box-shadow: inset -12px -12px 0 #3c285c77, 9px 13px 0 #1b2e3877; transform: rotate(-7deg); }
 .blob span { text-align: center; color: #fff5d5; font-size: 36px; line-height: .65; letter-spacing: 14px; transform: rotate(7deg); }
 .battle-monster { width: clamp(150px, 22vw, 230px); margin-bottom: -3px; filter: drop-shadow(7px 11px 4px #172b3777); }
+.battle-monster--event { width: clamp(180px, 22vw, 230px); }
+.battle-monster--event .monster-painted { aspect-ratio: 2 / 3; }
+.battle-monster--event.battle-monster--wide { width: clamp(250px, 30vw, 300px); }
+.battle-monster--wide .monster-painted { aspect-ratio: 1312 / 1199; }
 .monster-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .monster-painted { position: relative; display: block; width: 100%; aspect-ratio: 1; }
 .monster-painted img { display: block; width: 100%; height: 100%; object-fit: contain; }
@@ -430,6 +435,8 @@ p { line-height: 1.55; }
   .battle-avatar { width: 150px; }
   .blob { width: 115px; height: 95px; }
   .battle-monster { width: 150px; }
+  .battle-monster--event { width: 175px; }
+  .battle-monster--event.battle-monster--wide { width: 220px; }
   .surprise-scene { grid-template-columns: 1fr; }
   .surprise-scene > .monster-svg { width: 170px; margin: auto; }
   .blob span { font-size: 24px; }
@@ -456,6 +463,10 @@ p { line-height: 1.55; }
   .battle-avatar { width: 124px; }
   .blob { width: 100px; height: 83px; }
   .battle-monster { width: 115px; }
+  .battle-monster--event { width: min(140px, 40vw); }
+  .battle-monster--event.battle-monster--wide { width: clamp(145px, 40vw, 175px); }
+  .battle-panel--event { min-height: 410px; }
+  .battle-panel--event .battle-actors { padding-inline: 2%; }
   .bestiary-grid { grid-template-columns: 1fr; }
   #lieux .bestiary-grid { grid-template-columns: 1fr; }
   .battle-bottom { padding: 8px 11px; }
