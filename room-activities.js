@@ -9,7 +9,7 @@ export function shopkeeperPortraits(urls = {}) {
   </div>`;
 }
 
-export function renderRoomActivities(room, { activeTab = 'combat', specialEvent = null, training = null, florentEvent = null, edbAccess = null, mageRobeOwned = false, shopkeepers = {} } = {}) {
+export function renderRoomActivities(room, { activeTab = 'combat', specialEvent = null, training = null, watering = null, florentEvent = null, edbAccess = null, mageRobeOwned = false, shopkeepers = {} } = {}) {
   if (room.slug === 'edb') {
     const panel = edbAccess?.basementUnlocked
       ? '<p>Quentin Dahmer a été vaincu. Un passage vers le Sous-sol du CEBB est maintenant ouvert.</p><button id="enter-cebb-basement" class="primary-button">Descendre au sous-sol →</button>'
@@ -27,7 +27,9 @@ export function renderRoomActivities(room, { activeTab = 'combat', specialEvent 
     const panel = florentEvent?.unlocked
       ? `<span class="eyebrow">ÉVÉNEMENT SPÉCIAL · BUREAU FLORENT</span><h2>Fantôme du passé</h2><p>${escapeHtml(description)}</p><button id="start-florent-fight" class="primary-button">Combattre</button>`
       : `<p>Désolé, le Directeur est absent pour le moment, merci de revenir ultérieurement.</p>`;
-    return `<section class="room-activities"><section class="room-tab-panel paper-card">${panel}</section></section>`;
+    const reward = watering?.xpReward || 0;
+    const wateringPanel = `<div class="florent-watering"><h2>Arroser les plantes</h2><p>Arrosez les plantes pour gagner 50 % de l’XP nécessaire au prochain niveau${reward ? ` : <b>${reward} XP</b>` : ''}.</p>${watering?.available ? '<button id="water-plants" class="primary-button">Arroser les plantes</button>' : reward === 0 ? '<p>Vous avez atteint le niveau maximal.</p>' : `<p class="training-cooldown">Prochain arrosage : ${new Date(watering.nextAvailableAt).toLocaleString('fr-FR')}.</p>`}<p id="watering-result" class="event-result" role="status"></p></div>`;
+    return `<section class="room-activities"><section class="room-tab-panel paper-card">${panel}${wateringPanel}</section></section>`;
   }
   const tabs = [{ id: 'combat', label: 'Combat' }];
   if (room.slug === 'bureau-thesards') tabs.push({ id: 'shop', label: 'Boutique de Bibi et Bobo' });

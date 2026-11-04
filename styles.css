@@ -167,6 +167,7 @@ p { line-height: 1.55; }
 .shop-intro { align-items: center; }
 .shop-intro .shopkeepers { flex-basis: 230px; width: 230px; }
 .training-cooldown { font-weight: 800; }
+.florent-watering { margin-top: 22px; padding-top: 20px; border-top: 2px dashed #b1a78e; }
 .room-illustration { min-height: 330px; display: grid; place-content: center; gap: 8px; text-align: center; color: #2d4851; background: radial-gradient(circle at 76% 31%, #f4d98d 0 8%, transparent 8.2%), linear-gradient(45deg, #a8c7bd 25%, transparent 25% 75%, #a8c7bd 75%), linear-gradient(150deg, #e1d7bd, #c9dcd5); background-size: auto, 70px 70px, auto; }
 .room-illustration span { font-size: 55px; color: #bc684e; }
 .room-illustration strong { font: 900 clamp(30px,5vw,48px) Georgia,Cambria,serif; padding: 0 20px; }

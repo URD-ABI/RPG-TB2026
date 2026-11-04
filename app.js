@@ -3,7 +3,7 @@ import { gearArt } from './gear-art.js';
 import { monsterArt } from './monster-art.js';
 import { bossArt } from './boss-art.js';
 import { bossBanner, formatBossCountdown } from './boss-banner.js';
-import { renderRoomActivities, shopkeeperPortraits } from './room-activities.js';
+import { renderRoomActivities, shopkeeperPortraits } from './room-activities.js?v=20261104-watering';
 import { bestiaryCards, bestiaryCounts } from './bestiary-view.js';
 import { portraitIdFromUrl, portraitPoseStyle } from './portrait-poses.js';
 import { SKIN_TONES, DEFAULT_SKIN_TONE } from './skin-tones.js';
@@ -13,7 +13,7 @@ import { turnFeedback } from './combat-feedback.js?v=2';
 
 const app = document.querySelector('#app');
 const remoteApi = browserSupabaseApi();
-const state = { me: null, fight: null, turnPlayback: null, gear: null, portraits: [], shopkeepers: {}, skills: null, world: null, locations: [], access: null, event: null, secretEvent: null, specialEvent: null, florentEvent: null, training: null, roomTab: 'combat', roomNotice: null, bestiary: [], bestiaryCategory: 'common', leaderboard: [], selectedFloor: 'rdc', selectedLocation: null, screen: 'loading', equipmentReturn: 'map' };
+const state = { me: null, fight: null, turnPlayback: null, gear: null, portraits: [], shopkeepers: {}, skills: null, world: null, locations: [], access: null, event: null, secretEvent: null, specialEvent: null, florentEvent: null, training: null, watering: null, roomTab: 'combat', roomNotice: null, bestiary: [], bestiaryCategory: 'common', leaderboard: [], selectedFloor: 'rdc', selectedLocation: null, screen: 'loading', equipmentReturn: 'map' };
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 
 async function api(url, options = {}) {
@@ -116,11 +116,12 @@ async function syncRoute() {
   if (room) {
     state.selectedLocation = room.slug;
     state.selectedFloor = room.floor;
-    [state.secretEvent, state.specialEvent, state.training, state.florentEvent] = await Promise.all([
+    [state.secretEvent, state.specialEvent, state.training, state.florentEvent, state.watering] = await Promise.all([
       room.requiresMysteryKey && !state.access.edbUnlocked ? null : api(`/api/locations/${room.slug}/secret`),
       room.specialEvent ? api(`/api/locations/${room.slug}/enter`, { method: 'POST' }) : null,
       room.slug === 'gym' ? api('/api/locations/gym/training') : null,
-      room.florentEvent ? api('/api/locations/bureau-florent/event') : null
+      room.florentEvent ? api('/api/locations/bureau-florent/event') : null,
+      room.florentEvent ? api('/api/locations/bureau-florent/watering') : null
     ]);
     state.event = null;
     state.roomTab = 'combat';
@@ -370,7 +371,7 @@ function roomScreen() {
   const toll = room.isToll || locked ? `<section class="toll-card paper-card"><span class="eyebrow">PÉAGE DE L’AILE MAGNIEN</span><h2>${state.access.unlocked ? 'Passage ouvert' : 'Débloquer les salles de l’Aile Magnien'}</h2><p>${state.access.unlocked ? 'Votre accès est permanent. Vous pouvez désormais entrer dans la Salle de réunion et le Bureau Kévin.' : `Le passage coûte ${state.access.price} pièces une seule fois. Votre solde : ${state.access.coins} pièces.`}</p>${state.access.unlocked ? '<div class="toll-actions"><button id="go-meeting" class="primary-button">Entrer dans la Salle de réunion</button><button id="go-kevin" class="secondary-button">Entrer dans le Bureau Kévin</button></div>' : `<button id="pay-toll" class="primary-button" ${state.access.coins < state.access.price ? 'disabled' : ''}>Payer ${state.access.price} pièces</button>${state.access.coins < state.access.price ? '<p>Gagnez encore des pièces dans les laboratoires pour ouvrir ce passage.</p>' : ''}`}</section>` : '';
   const mysteryGate = mysteryLocked ? `<section class="toll-card paper-card"><span class="eyebrow">ACCÈS VERROUILLÉ · EDB</span><h2>La Clé Mystère</h2><p>${state.access.mysteryKeyOwned ? 'Vous possédez la Clé Mystère. Utilisez-la pour ouvrir cette salle définitivement.' : 'Achetez la Clé Mystère pour 500 pièces dans la Boutique de Bibi et Bobo, au Bureau Thésards.'}</p>${state.access.mysteryKeyOwned ? '<button id="use-mystery-key" class="primary-button">Utiliser la Clé Mystère</button>' : '<button id="go-thesards" class="secondary-button">Voir le Bureau Thésards</button>'}</section>` : '';
   const activities = locked || mysteryLocked ? '' : renderRoomActivities(room, {
-    activeTab: state.roomTab, specialEvent: state.specialEvent, training: state.training, florentEvent: state.florentEvent,
+    activeTab: state.roomTab, specialEvent: state.specialEvent, training: state.training, watering: state.watering, florentEvent: state.florentEvent,
     edbAccess: state.access, mageRobeOwned: state.gear?.inventory?.owned.includes('mage-noir'),
     shopkeepers: state.shopkeepers
   });
@@ -402,6 +403,16 @@ function roomScreen() {
     else beginFight(event, `/api/locations/${room.slug}/encounter`);
   });
   app.querySelector('#start-florent-fight')?.addEventListener('click', event => beginFight(event, '/api/locations/bureau-florent/event/encounter'));
+  app.querySelector('#water-plants')?.addEventListener('click', async event => {
+    event.currentTarget.disabled = true;
+    try {
+      state.watering = await api('/api/locations/bureau-florent/watering', { method: 'POST' });
+      state.me = await api('/api/me');
+      render();
+      const result = app.querySelector('#watering-result');
+      if (result) result.textContent = `Plantes arrosées : +${state.watering.xpGained} XP !`;
+    } catch (error) { errorLine(error); event.currentTarget.disabled = false; }
+  });
   app.querySelector('#start-boss')?.addEventListener('click', event => beginFight(event, '/api/bosses/encounter'));
   app.querySelectorAll('[data-room-tab]').forEach(button => button.addEventListener('click', async () => {
     const tab = button.dataset.roomTab;
