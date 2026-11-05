@@ -184,6 +184,7 @@ function progressionCard() {
   const start = progress.currentLevelXp;
   const end = progress.nextLevelXp;
   const percent = end === null ? 100 : Math.max(0, Math.min(100, 100 * (progress.xp - start) / (end - start)));
+  const blockedAtGate = progress.levelCap < 50 && progress.level >= progress.levelCap;
   const levelGate = progress.levelCap < 50
     ? `<p class="progression-note"><strong>Plafond actuel : niveau ${progress.levelCap}.</strong> Le boss collectif ${[15, 22, 32, 42].indexOf(progress.levelCap) + 1} doit être vaincu pour débloquer la suite. L’XP au-delà du plafond n’est pas conservée ; les pièces et objets restent gagnables.</p>`
     : '<p class="progression-note">Tous les paliers de niveau sont débloqués jusqu’au niveau 50.</p>';
@@ -202,7 +203,7 @@ function progressionCard() {
   const classes = progress.classes;
   const stage = (tier, required, selected, options) => `<div class="class-stage"><div><b>Niveau ${required}</b><span>${selected ? 'Choix effectué · bonus conservés' : progress.level < required ? `Disponible au niveau ${required}` : tier === 'advanced' && !classes.specialization ? 'Choisissez d’abord une spécialisation' : 'Choisissez une classe'}</span></div>${options.length ? `<div class="class-options">${classOptions(tier, options)}</div>` : ''}${tier === 'advanced' && classes.lockedSecrets ? `<small>${classes.lockedSecrets} spécialités secrètes restent à découvrir dans le bâtiment.</small>` : ''}</div>`;
   return `<section class="progression-card paper-card" aria-label="Progression du personnage"><div class="progression-heading"><div><span class="eyebrow">PROGRESSION · ${escapeHtml(classes.title)}</span><h2>Niveau ${progress.level}</h2></div><span class="point-badge">${progress.availablePoints ? `${progress.availablePoints} point${progress.availablePoints > 1 ? 's' : ''} à répartir` : 'Points répartis'}</span></div>
-    <div class="xp-label"><strong>${end === null ? `${progress.xp} XP` : `${progress.xp - start} / ${end - start} XP`}</strong><span>${end === null ? 'Niveau maximum' : `${progress.xp} XP cumulés · niveau suivant à ${end}`}</span></div>
+    <div class="xp-label"><strong>${end === null ? `${progress.xp} XP` : `${progress.xp - start} / ${end - start} XP`}</strong><span>${end === null ? 'Niveau maximum' : blockedAtGate ? `Niveau suivant verrouillé jusqu’à la défaite du boss collectif` : `${progress.xp} XP cumulés · niveau suivant à ${end}`}</span></div>
     <div class="xp-track" role="progressbar" aria-label="Expérience du niveau" aria-valuemin="${start}" aria-valuemax="${end ?? start}" aria-valuenow="${progress.xp}"><i style="width:${percent}%"></i></div>
     ${levelGate}
     <div class="stat-list">${groups.map(group => `<section class="stat-group"><h3>${group.title}</h3>${group.entries.map(item => `<div class="stat-row"><div><strong>${item.label} <span>+${progress.stats[item.id]}</span></strong><small>${item.effect}</small></div><b>${item.total}</b><button type="button" class="stat-add" data-stat="${item.id}" data-spent="${progress.spentPoints}" aria-label="Ajouter un point en ${item.label}" ${progress.availablePoints === 0 ? 'disabled' : ''}>+</button></div>`).join('')}</section>`).join('')}</div>
