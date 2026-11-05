@@ -13,7 +13,7 @@ import { turnFeedback } from './combat-feedback.js?v=2';
 
 const app = document.querySelector('#app');
 const remoteApi = browserSupabaseApi();
-const state = { me: null, fight: null, turnPlayback: null, gear: null, portraits: [], shopkeepers: {}, skills: null, world: null, locations: [], access: null, event: null, secretEvent: null, specialEvent: null, florentEvent: null, training: null, watering: null, roomTab: 'combat', roomNotice: null, bestiary: [], bestiaryCategory: 'common', leaderboard: [], selectedFloor: 'rdc', selectedLocation: null, screen: 'loading', equipmentReturn: 'map' };
+const state = { me: null, fight: null, turnPlayback: null, gear: null, portraits: [], shopkeepers: {}, skills: null, world: null, locations: [], access: null, event: null, secretEvent: null, specialEvent: null, florentEvent: null, training: null, watering: null, roomTab: 'combat', roomNotice: null, bestiary: [], bestiaryCategory: 'common', leaderboard: [], pvp: null, pvpDuel: null, selectedFloor: 'rdc', selectedLocation: null, screen: 'loading', equipmentReturn: 'map' };
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 
 async function api(url, options = {}) {
@@ -113,6 +113,15 @@ async function syncRoute() {
   const room = slug && locationBySlug(slug);
   if (room?.requiresMagnien && !state.access.unlocked) { setRoute(roomRoute('aile-magnien')); return; }
   if (room?.requiresQuentinVictory && !state.access.basementUnlocked) { setRoute(roomRoute('edb')); return; }
+  if (room?.pvpRoom) {
+    state.selectedLocation = room.slug;
+    state.selectedFloor = room.floor;
+    state.pvp = await api('/api/pvp');
+    state.pvpDuel = state.pvp.current;
+    state.screen = 'pvp';
+    render();
+    return;
+  }
   if (room) {
     state.selectedLocation = room.slug;
     state.selectedFloor = room.floor;
@@ -541,6 +550,62 @@ function leaderboardScreen() {
   app.querySelector('#back-map').addEventListener('click', () => setRoute(`#/carte/${state.selectedFloor}`));
 }
 
+function pvpScreen() {
+  const room = locationBySlug('octogone');
+  const online = state.pvp?.online || [];
+  const duel = state.pvp?.current || state.pvpDuel;
+  const onlineIds = new Set(online.map(player => player.id));
+  const busy = !!state.pvp?.current;
+  let duelPanel = '';
+  if (duel?.status === 'pending') {
+    const incoming = duel.opponentId === state.me.id;
+    duelPanel = `<section class="pvp-notice paper-card"><span class="eyebrow">DÉFI EN ATTENTE</span><h2>${incoming ? 'Un chercheur vous défie !' : 'Invitation envoyée'}</h2><p>${incoming ? 'Acceptez pour entrer dans l’Octogone.' : 'En attente de la réponse de votre adversaire.'}</p><small>Expiration : ${new Date(duel.expiresAt).toLocaleTimeString('fr-FR')}</small><div class="pvp-actions">${incoming ? `<button class="primary-button" data-pvp-reply="yes">Accepter</button><button class="secondary-button" data-pvp-reply="no">Refuser</button>` : '<button class="secondary-button" id="cancel-pvp">Annuler le défi</button>'}</div></section>`;
+  } else if (duel?.status === 'active' && duel.state) {
+    const self = duel.state.players[state.me.id];
+    const other = Object.values(duel.state.players).find(player => player.id !== state.me.id);
+    const myTurn = duel.state.actorId === state.me.id;
+    const stats = player => `<div class="pvp-fighter-stats"><b>${escapeHtml(player.nickname)}</b><span>Niv. ${player.level} · ${player.hp}/${player.maxHp} PV</span><div class="health-track"><i style="width:${100 * player.hp / player.maxHp}%"></i></div><small>Jauge ${player.charge}/${player.maxCharge}</small></div>`;
+    const portrait = player => avatar(player.presentation, player.portraitUrl, 'battle-avatar', player.outfitId,
+      { weapon: player.weaponId, accessory: player.accessoryId });
+    const moves = SPECIAL_MOVES.filter(move => self.level >= move.requiredLevel && (move.source !== 'shop' || self.skills.includes(move.action)));
+    duelPanel = `<section class="pvp-battle paper-card"><div class="pvp-battle-heading"><span class="eyebrow">DUEL EN DIRECT · TOUR ${duel.turn + 1}</span><h2>${myTurn ? 'À vous de jouer' : `Au tour de ${escapeHtml(other.nickname)}`}</h2><small>Tour jusqu’à ${new Date(duel.expiresAt).toLocaleTimeString('fr-FR')}</small></div><div class="pvp-fighters"><div data-pvp-player="${self.id}">${stats(self)}${portrait(self)}</div><span class="pvp-versus">VS</span><div data-pvp-player="${other.id}">${stats(other)}${portrait(other)}</div></div><div class="pvp-log" aria-live="polite">${duel.state.log.slice(-5).map(line => `<p>${escapeHtml(line)}</p>`).join('')}</div><div class="pvp-actions"><button class="action-button" data-pvp-action="attack_physical" ${myTurn ? '' : 'disabled'}>⚔ Frappe Physique</button><button class="action-button" data-pvp-action="attack_magic" ${myTurn ? '' : 'disabled'}>✦ Tir Magique</button><button class="action-button" data-pvp-action="guard" ${myTurn ? '' : 'disabled'}>◆ Défense</button></div><details class="pvp-skills"><summary>Compétences</summary><div class="pvp-actions">${moves.map(move => `<button class="secondary-button" data-pvp-action="${move.action}" ${myTurn && self.charge >= move.cost ? '' : 'disabled'}>${skillIcon(move.kind)} ${escapeHtml(move.label)} · ${move.cost} jauge${move.cost > 1 ? 's' : ''}</button>`).join('')}</div></details><button class="text-button" id="resign-pvp">Abandonner le duel</button></section>`;
+  } else if (duel && duel.status !== 'pending') {
+    const won = duel.winnerId === state.me.id;
+    duelPanel = `<section class="pvp-notice paper-card"><span class="eyebrow">DUEL TERMINÉ</span><h2>${duel.status === 'finished' ? won ? 'Victoire !' : 'Défaite' : duel.status === 'declined' ? 'Défi refusé' : 'Défi expiré'}</h2><p>${won ? 'Une victoire est ajoutée à votre classement JcJ.' : 'Vous pouvez lancer un nouveau défi.'}</p><button id="close-pvp-result" class="secondary-button">Voir l’Octogone</button></section>`;
+  }
+  const rows = state.pvp?.ranking || [];
+  shell(`<section class="room-intro"><button id="back-map" class="text-button">← Retour à la carte</button><span class="eyebrow">COUR INTÉRIEURE · JcJ</span><h1>Octogone</h1><p>${escapeHtml(room.description)}</p></section><section class="room-art paper-card"><img src="./assets/octogone.svg" alt="Arène de duel dans la Cour intérieure"></section>${duelPanel}<section class="pvp-layout"><div><h2>Classement JcJ</h2><p>Une victoire par duel remporté. Aucun XP ni pièce n’est attribué.</p><div class="leaderboard">${rows.length ? rows.map(row => `<div class="leaderboard-row ${row.isSelf ? 'leaderboard-row--self' : ''}"><strong class="leaderboard-rank">#${row.rank}</strong><span class="leaderboard-name">${escapeHtml(row.nickname)}</span><span class="leaderboard-level">${row.wins} victoire${row.wins > 1 ? 's' : ''}</span>${!row.isSelf && onlineIds.has(row.id) ? `<button class="secondary-button" data-pvp-challenge="${row.id}" ${busy ? 'disabled' : ''}>Défier</button>` : `<span class="pvp-offline">${row.isSelf ? 'Vous' : 'Hors ligne'}</span>`}</div>`).join('') : '<p>Les chercheurs apparaîtront ici après la création de leur personnage.</p>'}</div></div><aside class="pvp-online paper-card"><h2>Joueurs disponibles</h2><p>Pour être défié, gardez l’Octogone ouvert. Les joueurs absents disparaissent après quelques secondes.</p>${online.length ? online.map(player => `<div class="pvp-online-row"><span>● ${escapeHtml(player.nickname)} · Niv. ${player.level}</span><button class="secondary-button" data-pvp-challenge="${player.id}" ${busy ? 'disabled' : ''}>Défier</button></div>`).join('') : '<p>Aucun autre joueur dans l’Octogone pour le moment.</p>'}</aside></section><p data-error class="form-error" hidden role="alert"></p>`, 'Octogone');
+  if (duel?.status === 'active' && duel.state) {
+    for (const player of Object.values(duel.state.players)) {
+      const root = app.querySelector(`[data-pvp-player="${player.id}"]`);
+      if (root) applyOutfitSkin(root, player.skinTone || DEFAULT_SKIN_TONE);
+    }
+  }
+  app.querySelector('#back-map').addEventListener('click', () => setRoute('#/carte/rdc'));
+  app.querySelectorAll('[data-pvp-challenge]').forEach(button => button.addEventListener('click', async () => {
+    button.disabled = true;
+    try { state.pvpDuel = await api('/api/pvp/challenges', { method: 'POST', body: JSON.stringify({ opponentId: Number(button.dataset.pvpChallenge) }) }); state.pvp = await api('/api/pvp'); render(); }
+    catch (error) { errorLine(error); button.disabled = false; }
+  }));
+  app.querySelectorAll('[data-pvp-reply]').forEach(button => button.addEventListener('click', async () => {
+    button.disabled = true;
+    try { state.pvpDuel = await api(`/api/pvp/duels/${duel.id}/reply`, { method: 'POST', body: JSON.stringify({ accept: button.dataset.pvpReply === 'yes' }) }); state.pvp = await api('/api/pvp'); render(); }
+    catch (error) { errorLine(error); button.disabled = false; }
+  }));
+  app.querySelectorAll('[data-pvp-action]').forEach(button => button.addEventListener('click', async () => {
+    button.disabled = true;
+    try { state.pvpDuel = await api(`/api/pvp/duels/${duel.id}/turn`, { method: 'POST', body: JSON.stringify({ turn: duel.turn, action: button.dataset.pvpAction }) }); state.pvp = await api('/api/pvp'); render(); }
+    catch (error) { errorLine(error); button.disabled = false; }
+  }));
+  const resign = app.querySelector('#resign-pvp') || app.querySelector('#cancel-pvp');
+  resign?.addEventListener('click', async () => {
+    resign.disabled = true;
+    try { state.pvpDuel = await api(`/api/pvp/duels/${duel.id}/resign`, { method: 'POST' }); state.pvp = await api('/api/pvp'); render(); }
+    catch (error) { errorLine(error); resign.disabled = false; }
+  });
+  app.querySelector('#close-pvp-result')?.addEventListener('click', () => { state.pvpDuel = null; render(); });
+}
+
 function wardrobeScreen() {
   const { catalog: items, inventory: bag } = state.gear;
   const order = ['outfit', 'weapon', 'accessory'];
@@ -711,6 +776,7 @@ function render() {
   else if (state.screen === 'event' && state.event) eventScreen();
   else if (state.screen === 'bestiary') bestiaryScreen();
   else if (state.screen === 'leaderboard') leaderboardScreen();
+  else if (state.screen === 'pvp' && state.pvp) pvpScreen();
   else if (state.screen === 'combat' && state.fight) combatScreen();
   else shell('<section class="welcome-card paper-card"><h1>Chargement de l’aventure…</h1></section>');
   window.scrollTo(0, 0);
@@ -758,3 +824,24 @@ setInterval(async () => {
     if (JSON.stringify(state.world.bosses) !== previous || JSON.stringify(state.access) !== previousAccess) render();
   } catch { /* retry on the next interval */ }
 }, 15000);
+let pvpRefreshPending = false;
+setInterval(async () => {
+  if (state.screen !== 'pvp' || pvpRefreshPending) return;
+  pvpRefreshPending = true;
+  try {
+    const previous = JSON.stringify({ ranking: state.pvp?.ranking, online: state.pvp?.online,
+      duel: state.pvp?.current && { id: state.pvp.current.id, status: state.pvp.current.status, turn: state.pvp.current.turn },
+      result: state.pvpDuel && { id: state.pvpDuel.id, status: state.pvpDuel.status, turn: state.pvpDuel.turn } });
+    const dashboard = await api('/api/pvp');
+    const detail = state.pvpDuel?.id && ['pending', 'active'].includes(state.pvpDuel.status)
+      ? await api(`/api/pvp/duels/${state.pvpDuel.id}`) : null;
+    state.pvp = dashboard;
+    if (dashboard.current) state.pvpDuel = dashboard.current;
+    else if (detail) state.pvpDuel = detail;
+    const next = JSON.stringify({ ranking: state.pvp.ranking, online: state.pvp.online,
+      duel: state.pvp.current && { id: state.pvp.current.id, status: state.pvp.current.status, turn: state.pvp.current.turn },
+      result: state.pvpDuel && { id: state.pvpDuel.id, status: state.pvpDuel.status, turn: state.pvpDuel.turn } });
+    if (previous !== next) { const scroll = window.scrollY; render(); window.scrollTo(0, scroll); }
+  } catch { /* Le prochain passage relira le duel après une coupure réseau. */ }
+  finally { pvpRefreshPending = false; }
+}, 3000);

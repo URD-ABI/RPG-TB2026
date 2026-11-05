@@ -62,7 +62,9 @@
   <circle cx="650" cy="440" r="29" fill="#a2c4a9" stroke="#527269" stroke-width="3"/>
   <circle cx="755" cy="502" r="29" fill="#a2c4a9" stroke="#527269" stroke-width="3"/>
   <circle cx="650" cy="440" r="4" fill="#527269"/><circle cx="755" cy="502" r="4" fill="#527269"/>
-  <text x="691" y="575" class="note" text-anchor="middle">COUR INTÉRIEURE</text>
+  <path d="M683 487h34l24 24v34l-24 24h-34l-24-24v-34z" fill="#d5b8b0" stroke="#563d49" stroke-width="3"/>
+  <path d="M690 496h20l22 22v20l-22 22h-20l-22-22v-20z" fill="#efd8c2" stroke="#9f5b45" stroke-width="2"/>
+  <text x="691" y="598" class="note" text-anchor="middle">COUR INTÉRIEURE</text>
 
   <!-- Chimie occupies the full eastern wing, with its cross-walls and exterior openings. -->
   <path d="M851 151H969V735H851Z" class="room warm"/>

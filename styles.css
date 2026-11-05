@@ -318,6 +318,32 @@ p { line-height: 1.55; }
 .leaderboard-name { min-width: 0; overflow-wrap: anywhere; font-weight: 900; font-size: 19px; }
 .leaderboard-name small { color: #9a4e3d; font-size: 13px; }
 .leaderboard-level, .leaderboard-xp { font-weight: 800; text-align: right; }
+.pvp-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(240px, .8fr); gap: 24px; align-items: start; }
+.pvp-layout h2, .pvp-notice h2 { margin-top: 0; }
+.pvp-layout .leaderboard-row { grid-template-columns: 55px minmax(0, 1fr) auto auto; }
+.pvp-layout .leaderboard-level { white-space: nowrap; }
+.pvp-online, .pvp-notice { padding: 22px; }
+.pvp-online-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid #9ca9a2; padding: 12px 0; }
+.pvp-online-row span { font-weight: 800; }
+.pvp-online-row span::first-letter { color: #4a9e74; }
+.pvp-offline { color: #6b7472; font-size: 13px; text-align: right; }
+.pvp-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+.pvp-battle { margin: 20px 0 30px; padding: clamp(15px, 3vw, 28px); background: linear-gradient(#f8efd8e8, #f8efd8ee), url('./assets/octogone.svg') center/cover; }
+.pvp-battle-heading { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.pvp-battle-heading h2 { margin: 0; }
+.pvp-fighters { display: grid; grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr); align-items: center; gap: 12px; margin: 22px 0; }
+.pvp-fighters > div { min-width: 0; display: flex; flex-direction: column; align-items: center; }
+.pvp-fighters .avatar { margin: 34px auto 0; }
+.pvp-fighter-stats { width: min(100%, 270px); padding: 11px; border: 3px solid #263943; border-radius: 9px; background: #fff9e7; display: grid; gap: 4px; }
+.pvp-fighter-stats b { font-size: 17px; }
+.pvp-fighter-stats small { font-weight: 800; }
+.pvp-versus { text-align: center; font: 900 29px Georgia, serif; color: #a94f46; }
+.pvp-log { min-height: 75px; padding: 10px 15px; background: #f8efd8; border: 2px solid #263943; border-radius: 8px; }
+.pvp-log p { margin: 5px 0; }
+.pvp-skills { margin: 10px 0 18px; }
+.pvp-skills summary { cursor: pointer; font-weight: 900; }
+@media (max-width: 850px) { .pvp-layout { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .pvp-layout .leaderboard-row { grid-template-columns: 40px minmax(0, 1fr) auto; } .pvp-layout .leaderboard-row button, .pvp-layout .pvp-offline { grid-column: 2 / -1; } .pvp-fighters { grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr); gap: 2px; } .pvp-fighters .battle-avatar { width: 105px; } .pvp-versus { font-size: 18px; } .pvp-battle .pvp-actions .action-button { flex: 1 1 110px; } }
 @media (max-width: 600px) { .leaderboard-row { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 7px; padding: 12px; } .leaderboard-xp { grid-column: 2 / -1; text-align: left; } }
 .bestiary-progress { display: flex; gap: 11px; align-items: baseline; flex-wrap: wrap; width: fit-content; padding: 11px 17px; border: 3px solid #263b43; border-radius: 10px; background: #f5db9d; font-weight: 900; box-shadow: 3px 4px 0 #b9af96; }
 .bestiary-progress strong { font: 900 26px Georgia, Cambria, serif; }

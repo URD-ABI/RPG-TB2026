@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-label="Arène octogonale dans la Cour intérieure">
+  <defs>
+    <pattern id="paper" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M0 27h28M27 0v28" stroke="#d4c39f" stroke-width="1" opacity=".25"/></pattern>
+    <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#31474b"/><stop offset="1" stop-color="#1d3035"/></linearGradient>
+  </defs>
+  <rect width="1200" height="680" fill="#d7e2d4"/>
+  <rect width="1200" height="680" fill="url(#paper)"/>
+  <path d="M0 0h1200v278H0z" fill="url(#wall)"/>
+  <path d="M0 274h1200" stroke="#f5d996" stroke-width="12"/>
+  <path d="M0 590q600-195 1200 0v90H0" fill="#a2c4a9"/>
+  <path d="M320 193h560l149 149v173L880 643H320L171 515V342z" fill="#263943" stroke="#f8efd8" stroke-width="17"/>
+  <path d="M338 216h524l139 139v148L862 620H338L199 503V355z" fill="#b96754" stroke="#9f5b45" stroke-width="10"/>
+  <path d="M368 247h464l123 123v119L832 590H368L245 489V370z" fill="#e6d4b3" stroke="#f8efd8" stroke-width="8"/>
+  <path d="M600 246v344M246 418h708" stroke="#9f5b45" stroke-width="4" stroke-dasharray="17 16" opacity=".6"/>
+  <path d="M455 105h290" stroke="#f5d996" stroke-width="8" stroke-linecap="round"/>
+  <text x="600" y="157" fill="#f8efd8" font-family="Trebuchet MS,Arial,sans-serif" font-size="45" font-weight="900" letter-spacing="8" text-anchor="middle">OCTOGONE</text>
+</svg>
