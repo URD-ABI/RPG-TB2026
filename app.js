@@ -825,15 +825,19 @@ setInterval(async () => {
   } catch { /* retry on the next interval */ }
 }, 15000);
 let pvpRefreshPending = false;
+let lastPvpRefresh = 0;
 setInterval(async () => {
   if (state.screen !== 'pvp' || pvpRefreshPending) return;
+  const refreshDelay = state.pvp?.current?.status === 'active' ? 3000 : 10000;
+  if (Date.now() - lastPvpRefresh < refreshDelay) return;
   pvpRefreshPending = true;
+  lastPvpRefresh = Date.now();
   try {
     const previous = JSON.stringify({ ranking: state.pvp?.ranking, online: state.pvp?.online,
       duel: state.pvp?.current && { id: state.pvp.current.id, status: state.pvp.current.status, turn: state.pvp.current.turn },
       result: state.pvpDuel && { id: state.pvpDuel.id, status: state.pvpDuel.status, turn: state.pvpDuel.turn } });
     const dashboard = await api('/api/pvp');
-    const detail = state.pvpDuel?.id && ['pending', 'active'].includes(state.pvpDuel.status)
+    const detail = !dashboard.current && state.pvpDuel?.id && ['pending', 'active'].includes(state.pvpDuel.status)
       ? await api(`/api/pvp/duels/${state.pvpDuel.id}`) : null;
     state.pvp = dashboard;
     if (dashboard.current) state.pvpDuel = dashboard.current;
