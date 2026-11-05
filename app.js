@@ -3,7 +3,7 @@ import { gearArt } from './gear-art.js';
 import { monsterArt } from './monster-art.js';
 import { bossArt } from './boss-art.js';
 import { bossBanner, formatBossCountdown } from './boss-banner.js';
-import { renderRoomActivities, shopkeeperPortraits } from './room-activities.js?v=20261104-watering';
+import { renderRoomActivities, shopkeeperPortraits } from './room-activities.js?v=20261105-level-gates';
 import { bestiaryCards, bestiaryCounts } from './bestiary-view.js';
 import { portraitIdFromUrl, portraitPoseStyle } from './portrait-poses.js';
 import { SKIN_TONES, DEFAULT_SKIN_TONE } from './skin-tones.js';
@@ -184,6 +184,9 @@ function progressionCard() {
   const start = progress.currentLevelXp;
   const end = progress.nextLevelXp;
   const percent = end === null ? 100 : Math.max(0, Math.min(100, 100 * (progress.xp - start) / (end - start)));
+  const levelGate = progress.levelCap < 50
+    ? `<p class="progression-note"><strong>Plafond actuel : niveau ${progress.levelCap}.</strong> Le boss collectif ${[15, 22, 32, 42].indexOf(progress.levelCap) + 1} doit être vaincu pour débloquer la suite. L’XP au-delà du plafond n’est pas conservée ; les pièces et objets restent gagnables.</p>`
+    : '<p class="progression-note">Tous les paliers de niveau sont débloqués jusqu’au niveau 50.</p>';
   const groups = [
     { title: 'COMBAT', entries: [
       { id: 'vitality', label: 'Vitalité', effect: '+4 PV par point', total: `${progress.combat.health} PV` },
@@ -201,6 +204,7 @@ function progressionCard() {
   return `<section class="progression-card paper-card" aria-label="Progression du personnage"><div class="progression-heading"><div><span class="eyebrow">PROGRESSION · ${escapeHtml(classes.title)}</span><h2>Niveau ${progress.level}</h2></div><span class="point-badge">${progress.availablePoints ? `${progress.availablePoints} point${progress.availablePoints > 1 ? 's' : ''} à répartir` : 'Points répartis'}</span></div>
     <div class="xp-label"><strong>${end === null ? `${progress.xp} XP` : `${progress.xp - start} / ${end - start} XP`}</strong><span>${end === null ? 'Niveau maximum' : `${progress.xp} XP cumulés · niveau suivant à ${end}`}</span></div>
     <div class="xp-track" role="progressbar" aria-label="Expérience du niveau" aria-valuemin="${start}" aria-valuemax="${end ?? start}" aria-valuenow="${progress.xp}"><i style="width:${percent}%"></i></div>
+    ${levelGate}
     <div class="stat-list">${groups.map(group => `<section class="stat-group"><h3>${group.title}</h3>${group.entries.map(item => `<div class="stat-row"><div><strong>${item.label} <span>+${progress.stats[item.id]}</span></strong><small>${item.effect}</small></div><b>${item.total}</b><button type="button" class="stat-add" data-stat="${item.id}" data-spent="${progress.spentPoints}" aria-label="Ajouter un point en ${item.label}" ${progress.availablePoints === 0 ? 'disabled' : ''}>+</button></div>`).join('')}</section>`).join('')}</div>
     <div class="class-roadmap"><h3>Parcours de chercheur</h3><p>Chaque palier accorde deux bonus permanents, une tenue et une arme offertes. Les anciens objets restent dans votre sac. Un seul choix est possible par palier.</p>${stage('specialization', 20, classes.specialization, classes.specializationOptions)}${stage('advanced', 35, classes.advanced, classes.advancedOptions)}</div>
     <p class="progression-note">Chaque statistique commence à 1 et vous recevez 5 points libres à la création. Vous pouvez concentrer tous vos points dans une seule statistique. Les totaux incluent l’équipement et les bonus de classe. Les changements s’appliquent au prochain combat.</p></section>`;
