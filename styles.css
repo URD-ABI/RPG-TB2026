@@ -159,6 +159,7 @@ p { line-height: 1.55; }
 .room-tab-panel { min-height: 180px; padding: 24px 28px; }
 .room-tab-panel p { max-width: 68ch; color: #52646a; }
 .room-tab-panel .primary-button { margin-top: 5px; }
+.reserve-event-image { display: block; width: min(100%, 680px); max-height: 380px; object-fit: cover; margin: 14px 0 20px; border: 3px solid #273b43; border-radius: 12px; box-shadow: 4px 5px 0 #bdb39b; }
 .shop-room-promo { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .shopkeepers { position: relative; flex: 0 0 220px; width: 220px; height: 132px; }
 .shopkeepers img { position: absolute; display: block; width: 112px; height: 120px; object-fit: contain; filter: drop-shadow(3px 5px 2px #34404770); }
@@ -315,6 +316,8 @@ p { line-height: 1.55; }
 .leaderboard-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) 100px 120px; gap: 12px; align-items: center; padding: 15px 18px; border: 3px solid #273a43; border-radius: 12px; background: #f4e7c5; box-shadow: 4px 5px 0 #bcb39d; }
 .leaderboard-row--self { background: #f5d29b; border-color: #b05843; }
 .leaderboard-rank { font: 900 27px Georgia, Cambria, serif; }
+.leaderboard-identity { min-width: 0; display: flex; align-items: center; gap: 12px; }
+.leaderboard-portrait { width: 56px; height: 56px; flex: 0 0 56px; object-fit: contain; border-radius: 50%; background: #e7d8b6; border: 2px solid #273a43; }
 .leaderboard-name { min-width: 0; overflow-wrap: anywhere; font-weight: 900; font-size: 19px; }
 .leaderboard-name small { color: #9a4e3d; font-size: 13px; }
 .leaderboard-level, .leaderboard-xp { font-weight: 800; text-align: right; }
@@ -344,7 +347,7 @@ p { line-height: 1.55; }
 .pvp-skills summary { cursor: pointer; font-weight: 900; }
 @media (max-width: 850px) { .pvp-layout { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .pvp-layout .leaderboard-row { grid-template-columns: 40px minmax(0, 1fr) auto; } .pvp-layout .leaderboard-row button, .pvp-layout .pvp-offline { grid-column: 2 / -1; } .pvp-fighters { grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr); gap: 2px; } .pvp-fighters .battle-avatar { width: 105px; } .pvp-versus { font-size: 18px; } .pvp-battle .pvp-actions .action-button { flex: 1 1 110px; } }
-@media (max-width: 600px) { .leaderboard-row { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 7px; padding: 12px; } .leaderboard-xp { grid-column: 2 / -1; text-align: left; } }
+@media (max-width: 600px) { .leaderboard-row { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 7px; padding: 12px; } .leaderboard-portrait { width: 44px; height: 44px; flex-basis: 44px; } .leaderboard-identity { gap: 8px; } .leaderboard-xp { grid-column: 2 / -1; text-align: left; } }
 .bestiary-progress { display: flex; gap: 11px; align-items: baseline; flex-wrap: wrap; width: fit-content; padding: 11px 17px; border: 3px solid #263b43; border-radius: 10px; background: #f5db9d; font-weight: 900; box-shadow: 3px 4px 0 #b9af96; }
 .bestiary-progress strong { font: 900 26px Georgia, Cambria, serif; }
 .bestiary-progress small { margin-left: 11px; color: #586365; }

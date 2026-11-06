@@ -1,10 +1,11 @@
 import { SPECIAL_MOVES, gaugeForLevel } from './moves.js';
 import { gearArt } from './gear-art.js';
-import { monsterArt } from './monster-art.js';
+import { monsterArt } from './monster-art.js?v=20261106-new-creatures';
 import { bossArt } from './boss-art.js';
 import { bossBanner, formatBossCountdown } from './boss-banner.js';
-import { renderRoomActivities, shopkeeperPortraits } from './room-activities.js?v=20261105-level-gates';
-import { bestiaryCards, bestiaryCounts } from './bestiary-view.js';
+import { renderRoomActivities, shopkeeperPortraits } from './room-activities.js?v=20261106-room-photos';
+import { bestiaryCards, bestiaryCounts } from './bestiary-view.js?v=20261106-new-creatures';
+import { renderLeaderboardRows } from './leaderboard-view.js';
 import { portraitIdFromUrl, portraitPoseStyle } from './portrait-poses.js';
 import { SKIN_TONES, DEFAULT_SKIN_TONE } from './skin-tones.js';
 import { applyOutfitSkin } from './outfit-skin.js';
@@ -133,7 +134,10 @@ async function syncRoute() {
       room.florentEvent ? api('/api/locations/bureau-florent/watering') : null
     ]);
     state.event = null;
-    state.roomTab = 'combat';
+    if (room.slug === 'reserve' && state.specialEvent?.offered && !state.specialEvent.opened) {
+      state.specialEvent = await api('/api/locations/reserve/special/open', { method: 'POST' });
+    }
+    state.roomTab = room.slug === 'reserve' && state.specialEvent?.offered ? 'special' : 'combat';
     state.roomNotice = null;
     state.screen = 'room';
   } else {
@@ -494,6 +498,28 @@ function roomScreen() {
       render();
     } catch (error) { errorLine(error); app.querySelectorAll('[data-server-choice]').forEach(item => { item.disabled = false; }); }
   }));
+  app.querySelectorAll('[data-special-choice]').forEach(button => button.addEventListener('click', async () => {
+    app.querySelectorAll('[data-special-choice]').forEach(item => { item.disabled = true; });
+    try {
+      const result = await api(`/api/locations/${room.slug}/special/answer`, {
+        method: 'POST', body: JSON.stringify({ choice: button.dataset.specialChoice })
+      });
+      state.specialEvent = result;
+      if (result.fight) {
+        state.fight = result.message
+          ? { ...result.fight, message: `${result.message} ${result.fight.message}` }
+          : result.fight;
+        state.screen = 'combat';
+      } else if (!result.offered) {
+        state.roomTab = 'combat';
+        state.roomNotice = result.message;
+      }
+      render();
+    } catch (error) {
+      errorLine(error);
+      app.querySelectorAll('[data-special-choice]').forEach(item => { item.disabled = false; });
+    }
+  }));
   app.querySelector('#start-training')?.addEventListener('click', async event => {
     event.currentTarget.disabled = true;
     try {
@@ -541,7 +567,7 @@ function bestiaryScreen() {
     ['common', 'Communes'], ['room', 'Créatures de lieu'], ['boss', 'Boss']
   ];
   const category = state.bestiaryCategory;
-  shell(`<section class="bestiary-intro"><button id="back-map" class="text-button">← Retour à la carte</button><span class="eyebrow">EXPLORATION · TB2026</span><h1>Bestiaire des laboratoires</h1><p>Les créatures communes parcourent tout le bâtiment. Les quatre créatures de lieu sont liées aux événements des salles ; les boss ne révèlent leur identité qu’après leur défaite collective.</p><div class="bestiary-progress"><strong>${overall.discovered} / ${overall.total}</strong><span>fiches révélées</span><small>${overall.defeated} adversaire${overall.defeated > 1 ? 's' : ''} vaincu${overall.defeated > 1 ? 's' : ''}</small></div></section><div class="bestiary-tabs" role="group" aria-label="Catégories du bestiaire">${groups.map(([id, label]) => { const count = bestiaryCounts(monsters.filter(monster => monster.category === id)); return `<button type="button" class="${category === id ? 'active' : ''}" data-bestiary-category="${id}" aria-pressed="${category === id}">${label} <small>${count.discovered}/${count.total}</small></button>`; }).join('')}</div><section class="bestiary-grid" aria-label="Fiches des créatures">${bestiaryCards(monsters, category)}</section><p data-error class="form-error" hidden role="alert"></p>`, 'Bestiaire');
+  shell(`<section class="bestiary-intro"><button id="back-map" class="text-button">← Retour à la carte</button><span class="eyebrow">EXPLORATION · TB2026</span><h1>Bestiaire des laboratoires</h1><p>Les créatures communes parcourent tout le bâtiment. Les créatures de lieu sont liées aux événements des salles ; les boss ne révèlent leur identité qu’après leur défaite collective.</p><div class="bestiary-progress"><strong>${overall.discovered} / ${overall.total}</strong><span>fiches révélées</span><small>${overall.defeated} adversaire${overall.defeated > 1 ? 's' : ''} vaincu${overall.defeated > 1 ? 's' : ''}</small></div></section><div class="bestiary-tabs" role="group" aria-label="Catégories du bestiaire">${groups.map(([id, label]) => { const count = bestiaryCounts(monsters.filter(monster => monster.category === id)); return `<button type="button" class="${category === id ? 'active' : ''}" data-bestiary-category="${id}" aria-pressed="${category === id}">${label} <small>${count.discovered}/${count.total}</small></button>`; }).join('')}</div><section class="bestiary-grid" aria-label="Fiches des créatures">${bestiaryCards(monsters, category)}</section><p data-error class="form-error" hidden role="alert"></p>`, 'Bestiaire');
   app.querySelector('#back-map').addEventListener('click', () => setRoute(`#/carte/${state.selectedFloor}`));
   app.querySelectorAll('[data-bestiary-category]').forEach(button => button.addEventListener('click', () => {
     state.bestiaryCategory = button.dataset.bestiaryCategory;
@@ -551,7 +577,7 @@ function bestiaryScreen() {
 
 function leaderboardScreen() {
   const rows = state.leaderboard;
-  shell(`<section class="bestiary-intro"><button id="back-map" class="text-button">← Retour à la carte</button><span class="eyebrow">LES CHERCHEURS · TB2026</span><h1>Classement des joueurs</h1><p>Classement par niveau, puis par expérience cumulée. Les nouveaux résultats apparaissent à chaque ouverture de cette page.</p></section><section class="leaderboard" aria-label="Classement des joueurs">${rows.length ? rows.map(row => `<div class="leaderboard-row ${row.isSelf ? 'leaderboard-row--self' : ''}"><strong class="leaderboard-rank">#${row.rank}</strong><span class="leaderboard-name">${escapeHtml(row.nickname)}${row.isSelf ? ' <small>Vous</small>' : ''}</span><span class="leaderboard-level">Niv. ${row.level}</span><span class="leaderboard-xp">${row.xp.toLocaleString('fr-FR')} XP</span></div>`).join('') : '<p>Aucun personnage créé pour le moment.</p>'}</section><p data-error class="form-error" hidden role="alert"></p>`, 'Classement');
+  shell(`<section class="bestiary-intro"><button id="back-map" class="text-button">← Retour à la carte</button><span class="eyebrow">LES CHERCHEURS · TB2026</span><h1>Classement des joueurs</h1><p>Classement par niveau, puis par expérience cumulée. Les nouveaux résultats apparaissent à chaque ouverture de cette page.</p></section><section class="leaderboard" aria-label="Classement des joueurs">${renderLeaderboardRows(rows)}</section><p data-error class="form-error" hidden role="alert"></p>`, 'Classement');
   app.querySelector('#back-map').addEventListener('click', () => setRoute(`#/carte/${state.selectedFloor}`));
 }
 
@@ -579,7 +605,7 @@ function pvpScreen() {
     duelPanel = `<section class="pvp-notice paper-card"><span class="eyebrow">DUEL TERMINÉ</span><h2>${duel.status === 'finished' ? won ? 'Victoire !' : 'Défaite' : duel.status === 'declined' ? 'Défi refusé' : 'Défi expiré'}</h2><p>${won ? 'Une victoire est ajoutée à votre classement JcJ.' : 'Vous pouvez lancer un nouveau défi.'}</p><button id="close-pvp-result" class="secondary-button">Voir l’Octogone</button></section>`;
   }
   const rows = state.pvp?.ranking || [];
-  shell(`<section class="room-intro"><button id="back-map" class="text-button">← Retour à la carte</button><span class="eyebrow">COUR INTÉRIEURE · JcJ</span><h1>Octogone</h1><p>${escapeHtml(room.description)}</p></section><section class="room-art paper-card"><img src="./assets/octogone.svg" alt="Arène de duel dans la Cour intérieure"></section>${duelPanel}<section class="pvp-layout"><div><h2>Classement JcJ</h2><p>Une victoire par duel remporté. Aucun XP ni pièce n’est attribué.</p><div class="leaderboard">${rows.length ? rows.map(row => `<div class="leaderboard-row ${row.isSelf ? 'leaderboard-row--self' : ''}"><strong class="leaderboard-rank">#${row.rank}</strong><span class="leaderboard-name">${escapeHtml(row.nickname)}</span><span class="leaderboard-level">${row.wins} victoire${row.wins > 1 ? 's' : ''}</span>${!row.isSelf && onlineIds.has(row.id) ? `<button class="secondary-button" data-pvp-challenge="${row.id}" ${busy ? 'disabled' : ''}>Défier</button>` : `<span class="pvp-offline">${row.isSelf ? 'Vous' : 'Hors ligne'}</span>`}</div>`).join('') : '<p>Les chercheurs apparaîtront ici après la création de leur personnage.</p>'}</div></div><aside class="pvp-online paper-card"><h2>Joueurs disponibles</h2><p>Pour être défié, gardez l’Octogone ouvert. Les joueurs absents disparaissent après quelques secondes.</p>${online.length ? online.map(player => `<div class="pvp-online-row"><span>● ${escapeHtml(player.nickname)} · Niv. ${player.level}</span><button class="secondary-button" data-pvp-challenge="${player.id}" ${busy ? 'disabled' : ''}>Défier</button></div>`).join('') : '<p>Aucun autre joueur dans l’Octogone pour le moment.</p>'}</aside></section><p data-error class="form-error" hidden role="alert"></p>`, 'Octogone');
+  shell(`<section class="room-intro"><button id="back-map" class="text-button">← Retour à la carte</button><span class="eyebrow">COUR INTÉRIEURE · JcJ</span><h1>Octogone</h1><p>${escapeHtml(room.description)}</p></section><section class="room-art paper-card"><img src="./assets/${escapeHtml(room.image)}" alt="Cour intérieure illustrée à partir de la photo du lieu"></section>${duelPanel}<section class="pvp-layout"><div><h2>Classement JcJ</h2><p>Une victoire par duel remporté. Aucun XP ni pièce n’est attribué.</p><div class="leaderboard">${rows.length ? rows.map(row => `<div class="leaderboard-row ${row.isSelf ? 'leaderboard-row--self' : ''}"><strong class="leaderboard-rank">#${row.rank}</strong><span class="leaderboard-name">${escapeHtml(row.nickname)}</span><span class="leaderboard-level">${row.wins} victoire${row.wins > 1 ? 's' : ''}</span>${!row.isSelf && onlineIds.has(row.id) ? `<button class="secondary-button" data-pvp-challenge="${row.id}" ${busy ? 'disabled' : ''}>Défier</button>` : `<span class="pvp-offline">${row.isSelf ? 'Vous' : 'Hors ligne'}</span>`}</div>`).join('') : '<p>Les chercheurs apparaîtront ici après la création de leur personnage.</p>'}</div></div><aside class="pvp-online paper-card"><h2>Joueurs disponibles</h2><p>Pour être défié, gardez l’Octogone ouvert. Les joueurs absents disparaissent après quelques secondes.</p>${online.length ? online.map(player => `<div class="pvp-online-row"><span>● ${escapeHtml(player.nickname)} · Niv. ${player.level}</span><button class="secondary-button" data-pvp-challenge="${player.id}" ${busy ? 'disabled' : ''}>Défier</button></div>`).join('') : '<p>Aucun autre joueur dans l’Octogone pour le moment.</p>'}</aside></section><p data-error class="form-error" hidden role="alert"></p>`, 'Octogone');
   if (duel?.status === 'active' && duel.state) {
     for (const player of Object.values(duel.state.players)) {
       const root = app.querySelector(`[data-pvp-player="${player.id}"]`);

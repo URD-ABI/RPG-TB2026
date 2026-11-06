@@ -1,4 +1,4 @@
-import { monsterArt } from './monster-art.js';
+import { monsterArt } from './monster-art.js?v=20261106-new-creatures';
 import { bossArt } from './boss-art.js';
 
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character =>

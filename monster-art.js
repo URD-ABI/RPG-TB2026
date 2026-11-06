@@ -27,7 +27,9 @@ const escapeSvg = value => String(value).replace(/[&<>"']/g, character =>
 const paintedCreatures = new Set(['lab-mouse', 'mutant-mouse', 'chimera-mouse', 'culture',
   'culture-alpha', 'fungus', 'fungus-alpha', 'reaction', 'reaction-alpha', 'anomaly',
   'event-octopus', 'event-krugg', 'event-quentin', 'event-witch',
-  'event-octopus-v2', 'event-krugg-v2', 'event-quentin-v2', 'event-witch-v2']);
+  'event-octopus-v2', 'event-krugg-v2', 'event-quentin-v2', 'event-witch-v2',
+  'special-bete-deux-dos-v4', 'special-canape-insemine-v3',
+  'special-bulbito-bandito-traktorito-v2', 'special-heisenbilal-v2']);
 
 export function monsterArt(id, hidden = false, label = null, tier = 0) {
   if (!hidden && paintedCreatures.has(id)) {

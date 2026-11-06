@@ -31,11 +31,12 @@ export function renderRoomActivities(room, { activeTab = 'combat', specialEvent 
     const wateringPanel = `<div class="florent-watering"><h2>Arroser les plantes</h2><p>Arrosez les plantes pour gagner 50 % de l’XP nécessaire au prochain niveau${reward ? ` : <b>${reward} XP</b>` : ''}.</p>${watering?.available ? '<button id="water-plants" class="primary-button">Arroser les plantes</button>' : reward === 0 ? `<p>${watering?.levelCap < 50 ? `Plafond niveau ${watering.levelCap} atteint : attendez la défaite du prochain boss collectif.` : 'Vous avez atteint le niveau maximal.'}</p>` : `<p class="training-cooldown">Prochain arrosage : ${new Date(watering.nextAvailableAt).toLocaleString('fr-FR')}.</p>`}<p id="watering-result" class="event-result" role="status"></p></div>`;
     return `<section class="room-activities"><section class="room-tab-panel paper-card">${panel}${wateringPanel}</section></section>`;
   }
-  const tabs = [{ id: 'combat', label: 'Combat' }];
+  const reserveBlocked = room.slug === 'reserve' && specialEvent?.offered;
+  const tabs = reserveBlocked ? [] : [{ id: 'combat', label: 'Combat' }];
   if (room.slug === 'bureau-thesards') tabs.push({ id: 'shop', label: 'Boutique de Bibi et Bobo' });
   if (room.slug === 'gym') tabs.push({ id: 'training', label: 'Entraînement' });
   if (specialEvent?.offered) tabs.push({ id: 'special', label: 'Événement spécial ✦' });
-  const selected = tabs.some(tab => tab.id === activeTab) ? activeTab : 'combat';
+  const selected = tabs.some(tab => tab.id === activeTab) ? activeTab : tabs[0].id;
   const tabButtons = tabs.map(tab => `<button type="button" id="room-tab-${tab.id}" role="tab" data-room-tab="${tab.id}" aria-selected="${tab.id === selected}" aria-controls="room-tab-panel" class="${tab.id === selected ? 'active' : ''}">${escapeHtml(tab.label)}</button>`).join('');
   let panel;
   if (selected === 'shop') {
@@ -60,6 +61,17 @@ export function renderRoomActivities(room, { activeTab = 'combat', specialEvent 
         ? `<p class="coa-event-question">${escapeHtml(prompt)}</p><div class="coa-event-choices"><button type="button" class="primary-button" data-server-choice="yes">Oui</button><button type="button" class="secondary-button" data-server-choice="no">Non</button></div>`
         : '<p>Ouverture de l’événement…</p>';
       panel = `<span class="eyebrow">ÉVÉNEMENT SPÉCIAL · ${escapeHtml(room.name)}</span><h2>${escapeHtml(specialEvent.title)}</h2>${choices}`;
+    } else if (['reserve', 'infirmerie', 'analytique', 'chimie'].includes(room.slug)) {
+      const prompt = room.slug === 'reserve' && specialEvent.stage === 2
+        ? 'La lumière fonctionne à peine mais vous entendez du bruit entre les étagères. Voulez-vous en vérifier la source ?'
+        : specialEvent.description;
+      const controls = specialEvent.opened
+        ? room.slug === 'analytique'
+          ? '<button type="button" class="primary-button" data-special-choice="yes">Combattre</button>'
+          : `<p class="coa-event-question">${escapeHtml(prompt)}</p><div class="coa-event-choices"><button type="button" class="primary-button" data-special-choice="yes">Oui</button><button type="button" class="secondary-button" data-special-choice="no">Non</button></div>`
+        : '<p>Ouverture de l’événement…</p>';
+      const eventArt = room.slug === 'reserve' ? '<img class="reserve-event-image" src="./assets/reserve-door.png" alt="La porte fermée de la Réserve">' : '';
+      panel = `<span class="eyebrow">ÉVÉNEMENT SPÉCIAL · ${escapeHtml(room.name)}</span><h2>${escapeHtml(specialEvent.title)}</h2>${eventArt}${room.slug === 'analytique' ? `<p>${escapeHtml(prompt)}</p>` : ''}${controls}`;
     } else if (room.slug === 'bureau-kevin') {
       const result = specialEvent.message ? `<p class="event-result" role="status">${escapeHtml(specialEvent.message)}</p>` : '';
       const reward = specialEvent.outcome === 'success' ? '<p>Tenue et arme du Directeur Adjoint débloquées dans votre équipement.</p>' : '';
